@@ -15,10 +15,7 @@ export function renderAuth(type) {
           <input type="email" id="email" class="input-field" placeholder="your@email.com" required>
         </div>
         
-        <div class="input-group">
-          <label>Password</label>
-          <input type="password" id="password" class="input-field" placeholder="••••••••" required>
-        </div>
+        <!-- Password field removed as per user request -->
 
         ${!isLogin ? `
         <div class="input-group">

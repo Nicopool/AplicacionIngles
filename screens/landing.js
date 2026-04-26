@@ -1,87 +1,46 @@
 // =====================================================
-// LANDING PAGE — Pantalla de bienvenida
+// LANDING PAGE — Pantalla de bienvenida (Diseño Simple)
 // =====================================================
 
 export function renderLanding(navigate) {
   return `
-    <div class="screen landing">
-      <!-- Hero -->
-      <div class="landing-hero">
-        <div class="hero-badge">🔥 15-day streak!</div>
-        <div class="hero-stats-card">
-          <div class="hero-stats-label">Weekly Progress</div>
-          <div class="hero-stats-value">80%</div>
-          <div class="progress-bar mt-8" style="background:#e2e8f0">
-            <div class="progress-bar-fill" style="width:80%;background:linear-gradient(90deg,#16A34A,#2563EB)"></div>
-          </div>
-          <div class="hero-dots mt-8">
-            <div class="hero-dot"></div>
-            <div class="hero-dot"></div>
-            <div class="hero-dot"></div>
-            <div class="hero-dot dim"></div>
-            <div class="hero-dot dim"></div>
-          </div>
-        </div>
+    <div class="screen landing" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; min-height:100vh; background: linear-gradient(180deg, #F8FAFC 0%, #EFF6FF 100%); padding: 24px;">
+      
+      <!-- Icono central flotante -->
+      <div style="font-size: 96px; line-height: 1; margin-bottom: 24px; animation: float 3s ease-in-out infinite;">
+        🌎
       </div>
 
-      <!-- Tagline -->
-      <div class="landing-tagline">🌐 Your bilingual future starts here</div>
-      <h1 class="landing-title">Master English in a <em>fun</em> and natural way.</h1>
-      <p class="landing-subtitle">Learn with immersive reading, games, and real practice. Designed to get you speaking from day one without getting bored.</p>
+      <!-- Título Principal -->
+      <h1 style="font-size: 36px; font-weight: 900; color: var(--text-main); line-height: 1.1; margin-bottom: 16px; letter-spacing: -1px;">
+        Inglés <span style="color: var(--primary);">Sin Fricción</span>
+      </h1>
+      
+      <!-- Subtítulo -->
+      <p style="font-size: 16px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 40px; max-width: 320px;">
+        Aprende con lectura inmersiva, juegos interactivos y reconocimiento de voz. Directo al grano y sin aburrirte.
+      </p>
 
-      <!-- Actions -->
-      <div class="landing-actions">
-        <button class="btn btn-primary" id="btn-start" onclick="window._nav('register')">
-          Get Started Now →
-        </button>
-        <button class="btn btn-secondary" id="btn-login" onclick="window._nav('login')">
-          I already have an account
+      <!-- Botón de acción -->
+      <div style="width: 100%; max-width: 300px;">
+        <button class="btn btn-primary" style="width: 100%; padding: 18px; font-size: 18px; font-weight: 800; border-radius: 100px; box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4);" onclick="window._nav('dashboard')">
+          Comenzar ahora →
         </button>
       </div>
 
-      <!-- Metrics -->
-      <div class="landing-metrics">
-        <div class="landing-metric">
-          <div class="landing-metric-value">500k+</div>
-          <div class="landing-metric-label">Students</div>
-        </div>
-        <div class="landing-metric">
-          <div class="landing-metric-value">4.9/5</div>
-          <div class="landing-metric-label">App Store Rating</div>
-        </div>
-        <div class="landing-metric">
-          <div class="landing-metric-value">150+</div>
-          <div class="landing-metric-label">Countries</div>
-        </div>
+      <!-- Footer simple -->
+      <div style="margin-top: 32px; font-size: 13px; color: var(--text-muted); font-weight: 600;">
+        100% Gratis • Aprende Jugando
       </div>
 
-      <!-- Features -->
-      <div class="feature-list">
-        <div class="feature-card">
-          <div class="feature-icon blue">📖</div>
-          <div>
-            <div class="feature-title">Immersive Reading</div>
-            <div class="feature-desc">Stories tailored to your level that help you absorb vocabulary contextually.</div>
-          </div>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon green">🎮</div>
-          <div>
-            <div class="feature-title">Gaming Challenges</div>
-            <div class="feature-desc">Compete in weekly leagues, unlock achievements, and keep your streak active while having fun.</div>
-          </div>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon orange">🎤</div>
-          <div>
-            <div class="feature-title">Real Practice</div>
-            <div class="feature-desc">Speech recognition technology to perfect your pronunciation from the very first day.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Footer padding -->
-      <div style="height:32px"></div>
+      <!-- Keyframe local para animación -->
+      <style>
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-12px); }
+          100% { transform: translateY(0px); }
+        }
+      </style>
     </div>
   `;
 }

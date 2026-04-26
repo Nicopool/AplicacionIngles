@@ -1,0 +1,802 @@
+[
+  {
+    "level": "A1",
+    "word": "BREAD",
+    "translation": "Pan",
+    "type": "noun",
+    "hint": "A food made from flour and water.",
+    "example": "I want a piece of bread with butter."
+  },
+  {
+    "level": "A1",
+    "word": "WATER",
+    "translation": "Agua",
+    "type": "noun",
+    "hint": "The clear liquid that we drink to stay alive.",
+    "example": "Can I have a glass of water, please?"
+  },
+  {
+    "level": "A1",
+    "word": "HAPPY",
+    "translation": "Feliz",
+    "type": "adjective",
+    "hint": "The feeling you have when you smile.",
+    "example": "Today is a very happy day for me."
+  },
+  {
+    "level": "A1",
+    "word": "WRITE",
+    "translation": "Escribir",
+    "type": "verb",
+    "hint": "To use a pen or pencil to make words on paper.",
+    "example": "I need to write a letter to my friend."
+  },
+  {
+    "level": "A1",
+    "word": "SMALL",
+    "translation": "Pequeño",
+    "type": "adjective",
+    "hint": "Not big; little in size.",
+    "example": "My cat is very small and cute."
+  },
+  {
+    "level": "A1",
+    "word": "CHAIR",
+    "translation": "Silla",
+    "type": "noun",
+    "hint": "A piece of furniture used for sitting.",
+    "example": "Please sit down on the blue chair."
+  },
+  {
+    "level": "A1",
+    "word": "LEARN",
+    "translation": "Aprender",
+    "type": "verb",
+    "hint": "To get new knowledge or skills.",
+    "example": "I want to learn English this year."
+  },
+  {
+    "level": "A1",
+    "word": "GREEN",
+    "translation": "Verde",
+    "type": "adjective",
+    "hint": "The color of grass and most trees.",
+    "example": "The leaves on the tree are green."
+  },
+  {
+    "level": "A1",
+    "word": "SCHOOL",
+    "translation": "Escuela",
+    "type": "noun",
+    "hint": "A place where children go to study.",
+    "example": "The children are at school right now."
+  },
+  {
+    "level": "A1",
+    "word": "DRINK",
+    "translation": "Beber",
+    "type": "verb",
+    "hint": "To take liquid into your mouth and swallow it.",
+    "example": "Do you want to drink some orange juice?"
+  },
+  {
+    "level": "A1",
+    "word": "WINDOW",
+    "translation": "Ventana",
+    "type": "noun",
+    "hint": "An opening in a wall to let light and air in.",
+    "example": "Please close the window; it is cold."
+  },
+  {
+    "level": "A1",
+    "word": "MOTHER",
+    "translation": "Madre",
+    "type": "noun",
+    "hint": "A female parent.",
+    "example": "My mother is a very kind woman."
+  },
+  {
+    "level": "A1",
+    "word": "FRUIT",
+    "translation": "Fruta",
+    "type": "noun",
+    "hint": "Apples, bananas, and oranges are types of this.",
+    "example": "I usually eat fruit after lunch."
+  },
+  {
+    "level": "A1",
+    "word": "SLEEP",
+    "translation": "Dormir",
+    "type": "verb",
+    "hint": "To rest with your eyes closed at night.",
+    "example": "I need to sleep eight hours every night."
+  },
+  {
+    "level": "A1",
+    "word": "TABLE",
+    "translation": "Mesa",
+    "type": "noun",
+    "hint": "A piece of furniture with four legs used for eating.",
+    "example": "The dinner is ready on the table."
+  },
+  {
+    "level": "A1",
+    "word": "BIRD",
+    "translation": "Pájaro",
+    "type": "noun",
+    "hint": "An animal that has feathers and can fly.",
+    "example": "A small bird is singing in the tree."
+  },
+  {
+    "level": "A1",
+    "word": "QUICK",
+    "translation": "Rápido",
+    "type": "adjective",
+    "hint": "Moving or doing something very fast.",
+    "example": "Be quick or we will miss the bus!"
+  },
+  {
+    "level": "A1",
+    "word": "HOUSE",
+    "translation": "Casa",
+    "type": "noun",
+    "hint": "A building where a family lives.",
+    "example": "My house is near the park."
+  },
+  {
+    "level": "A1",
+    "word": "LAUGH",
+    "translation": "Reír",
+    "type": "verb",
+    "hint": "To make sounds because something is funny.",
+    "example": "The children laugh at the funny movie."
+  },
+  {
+    "level": "A1",
+    "word": "NIGHT",
+    "translation": "Noche",
+    "type": "noun",
+    "hint": "The time when it is dark and people sleep.",
+    "example": "The moon is very bright tonight."
+  },
+  {
+    "level": "A2",
+    "word": "BRIDGE",
+    "translation": "Puente",
+    "type": "noun",
+    "hint": "A structure built over a river or road.",
+    "example": "We walked across the bridge to the city."
+  },
+  {
+    "level": "A2",
+    "word": "CANCEL",
+    "translation": "Cancelar",
+    "type": "verb",
+    "hint": "To stop an event from happening.",
+    "example": "They had to cancel the meeting today."
+  },
+  {
+    "level": "A2",
+    "word": "FAMOUS",
+    "translation": "Famoso",
+    "type": "adjective",
+    "hint": "Known by many people.",
+    "example": "He is a famous actor in Hollywood."
+  },
+  {
+    "level": "A2",
+    "word": "JOURNEY",
+    "translation": "Viaje",
+    "type": "noun",
+    "hint": "The act of traveling from one place to another.",
+    "example": "It was a long journey by train."
+  },
+  {
+    "level": "A2",
+    "word": "KITCHEN",
+    "translation": "Cocina",
+    "type": "noun",
+    "hint": "The room where you cook food.",
+    "example": "Mom is preparing soup in the kitchen."
+  },
+  {
+    "level": "A2",
+    "word": "HEALTHY",
+    "translation": "Saludable",
+    "type": "adjective",
+    "hint": "Good for your body.",
+    "example": "Eating vegetables is very healthy."
+  },
+  {
+    "level": "A2",
+    "word": "BORROW",
+    "translation": "Pedir prestado",
+    "type": "verb",
+    "hint": "To take something and give it back later.",
+    "example": "Can I borrow your pen for a second?"
+  },
+  {
+    "level": "A2",
+    "word": "CLOUDY",
+    "translation": "Nublado",
+    "type": "adjective",
+    "hint": "When there are many clouds in the sky.",
+    "example": "It is a cloudy day, but it is not raining."
+  },
+  {
+    "level": "A2",
+    "word": "CHOOSE",
+    "translation": "Elegir",
+    "type": "verb",
+    "hint": "To pick one thing from a group.",
+    "example": "You can choose between tea or coffee."
+  },
+  {
+    "level": "A2",
+    "word": "DANGER",
+    "translation": "Peligro",
+    "type": "noun",
+    "hint": "Something that can hurt you.",
+    "example": "The sign warns people about the danger."
+  },
+  {
+    "level": "A2",
+    "word": "FORGET",
+    "translation": "Olvidar",
+    "type": "verb",
+    "hint": "To not remember something.",
+    "example": "Don't forget to lock the door."
+  },
+  {
+    "level": "A2",
+    "word": "LESSON",
+    "translation": "Lección",
+    "type": "noun",
+    "hint": "A period of time for learning a subject.",
+    "example": "The English lesson starts at nine."
+  },
+  {
+    "level": "A2",
+    "word": "MARKET",
+    "translation": "Mercado",
+    "type": "noun",
+    "hint": "A place where people buy and sell food.",
+    "example": "I buy fresh fruit at the local market."
+  },
+  {
+    "level": "A2",
+    "word": "MODERN",
+    "translation": "Moderno",
+    "type": "adjective",
+    "hint": "New and not using old styles.",
+    "example": "The office is in a very modern building."
+  },
+  {
+    "level": "A2",
+    "word": "POLITE",
+    "translation": "Educado",
+    "type": "adjective",
+    "hint": "Having good manners toward others.",
+    "example": "It is important to be polite to everyone."
+  },
+  {
+    "level": "A2",
+    "word": "SEARCH",
+    "translation": "Buscar",
+    "type": "verb",
+    "hint": "To look for something carefully.",
+    "example": "I need to search for my lost keys."
+  },
+  {
+    "level": "A2",
+    "word": "TRAVEL",
+    "translation": "Viajar",
+    "type": "verb",
+    "hint": "To go to a different city or country.",
+    "example": "I want to travel to Japan next summer."
+  },
+  {
+    "level": "A2",
+    "word": "USEFUL",
+    "translation": "Útil",
+    "type": "adjective",
+    "hint": "Helping you to do or achieve something.",
+    "example": "This app is very useful for learning."
+  },
+  {
+    "level": "A2",
+    "word": "VILLAGE",
+    "translation": "Pueblo",
+    "type": "noun",
+    "hint": "A very small town in the countryside.",
+    "example": "He lives in a quiet village in the mountains."
+  },
+  {
+    "level": "A2",
+    "word": "WEATHER",
+    "translation": "Clima",
+    "type": "noun",
+    "hint": "The state of the air (rain, sun, wind).",
+    "example": "What is the weather like today?"
+  },
+  {
+    "level": "B1",
+    "word": "ADVICE",
+    "translation": "Consejo",
+    "type": "noun",
+    "hint": "An opinion about what someone should do.",
+    "example": "Thank you for the good advice."
+  },
+  {
+    "level": "B1",
+    "word": "BELIEVE",
+    "translation": "Creer",
+    "type": "verb",
+    "hint": "To think that something is true.",
+    "example": "I believe that you can pass the test."
+  },
+  {
+    "level": "B1",
+    "word": "COMFORT",
+    "translation": "Comodidad",
+    "type": "noun",
+    "hint": "A state of physical ease and freedom from pain.",
+    "example": "I like this sofa because of its comfort."
+  },
+  {
+    "level": "B1",
+    "word": "DECIDE",
+    "translation": "Decidir",
+    "type": "verb",
+    "hint": "To make a choice after thinking.",
+    "example": "It is difficult to decide which one to buy."
+  },
+  {
+    "level": "B1",
+    "word": "EFFORT",
+    "translation": "Esfuerzo",
+    "type": "noun",
+    "hint": "Physical or mental energy used to do something.",
+    "example": "She put a lot of effort into her project."
+  },
+  {
+    "level": "B1",
+    "word": "FREEDOM",
+    "translation": "Libertad",
+    "type": "noun",
+    "hint": "The power to act, speak, or think as you want.",
+    "example": "The people fought for their freedom."
+  },
+  {
+    "level": "B1",
+    "word": "GUILTY",
+    "translation": "Culpable",
+    "type": "adjective",
+    "hint": "Feeling bad because you did something wrong.",
+    "example": "I felt guilty for missing your party."
+  },
+  {
+    "level": "B1",
+    "word": "IMPROVE",
+    "translation": "Mejorar",
+    "type": "verb",
+    "hint": "To make something better than before.",
+    "example": "You need to practice to improve your skills."
+  },
+  {
+    "level": "B1",
+    "word": "JUSTICE",
+    "translation": "Justicia",
+    "type": "noun",
+    "hint": "Fairness in the way people are treated.",
+    "example": "The lawyer fought for justice in court."
+  },
+  {
+    "level": "B1",
+    "word": "KNOWLEDGE",
+    "translation": "Conocimiento",
+    "type": "noun",
+    "hint": "Information and skills gained through experience.",
+    "example": "Books are a great source of knowledge."
+  },
+  {
+    "level": "B1",
+    "word": "MANAGE",
+    "translation": "Gestionar",
+    "type": "verb",
+    "hint": "To be in control or charge of something.",
+    "example": "How do you manage your time so well?"
+  },
+  {
+    "level": "B1",
+    "word": "NORMAL",
+    "translation": "Normal",
+    "type": "adjective",
+    "hint": "Usual, typical, or expected.",
+    "example": "It is normal to feel nervous before a test."
+  },
+  {
+    "level": "B1",
+    "word": "OPINION",
+    "translation": "Opinión",
+    "type": "noun",
+    "hint": "A thought or belief about something.",
+    "example": "In my opinion, this is the best option."
+  },
+  {
+    "level": "B1",
+    "word": "PROMISE",
+    "translation": "Promesa",
+    "type": "verb",
+    "hint": "To say that you will certainly do something.",
+    "example": "I promise to be there on time."
+  },
+  {
+    "level": "B1",
+    "word": "REDUCE",
+    "translation": "Reducir",
+    "type": "verb",
+    "hint": "To make something smaller or less.",
+    "example": "We need to reduce the amount of waste."
+  },
+  {
+    "level": "B1",
+    "word": "SUCCESS",
+    "translation": "Éxito",
+    "type": "noun",
+    "hint": "The achievement of an aim or purpose.",
+    "example": "Hard work is the key to success."
+  },
+  {
+    "level": "B1",
+    "word": "THOUGHT",
+    "translation": "Pensamiento",
+    "type": "noun",
+    "hint": "An idea or opinion produced by thinking.",
+    "example": "The thought of flying makes me happy."
+  },
+  {
+    "level": "B1",
+    "word": "URGENT",
+    "translation": "Urgente",
+    "type": "adjective",
+    "hint": "Requiring immediate action or attention.",
+    "example": "I have an urgent message for the boss."
+  },
+  {
+    "level": "B1",
+    "word": "VICTORY",
+    "translation": "Victoria",
+    "type": "noun",
+    "hint": "An act of winning a game or contest.",
+    "example": "The team celebrated their big victory."
+  },
+  {
+    "level": "B1",
+    "word": "WONDER",
+    "translation": "Preguntarse",
+    "type": "verb",
+    "hint": "To want to know more about something.",
+    "example": "I wonder why the sky is blue."
+  },
+  {
+    "level": "B2",
+    "word": "ACCURATE",
+    "translation": "Preciso",
+    "type": "adjective",
+    "hint": "Correct, exact, and without any mistakes.",
+    "example": "The weather forecast was very accurate."
+  },
+  {
+    "level": "B2",
+    "word": "BOUNDARY",
+    "translation": "Límite",
+    "type": "noun",
+    "hint": "A line that marks the limits of an area.",
+    "example": "The river forms a natural boundary."
+  },
+  {
+    "level": "B2",
+    "word": "CHALLENGE",
+    "translation": "Desafío",
+    "type": "noun",
+    "hint": "A task that tests someone's ability.",
+    "example": "Climbing the mountain was a huge challenge."
+  },
+  {
+    "level": "B2",
+    "word": "DEVELOP",
+    "translation": "Desarrollar",
+    "type": "verb",
+    "hint": "To grow or change into something more advanced.",
+    "example": "Scientists want to develop a new medicine."
+  },
+  {
+    "level": "B2",
+    "word": "EVIDENCE",
+    "translation": "Evidencia",
+    "type": "noun",
+    "hint": "Facts that show that something is true.",
+    "example": "There is no evidence to support that claim."
+  },
+  {
+    "level": "B2",
+    "word": "FREQUENT",
+    "translation": "Frecuente",
+    "type": "adjective",
+    "hint": "Happening or doing something often.",
+    "example": "He is a frequent visitor to this library."
+  },
+  {
+    "level": "B2",
+    "word": "GATHER",
+    "translation": "Reunir",
+    "type": "verb",
+    "hint": "To bring things or people together.",
+    "example": "We need to gather more information first."
+  },
+  {
+    "level": "B2",
+    "word": "HERITAGE",
+    "translation": "Patrimonio",
+    "type": "noun",
+    "hint": "Traditions and objects passed down through generations.",
+    "example": "The castle is part of the national heritage."
+  },
+  {
+    "level": "B2",
+    "word": "INCREASE",
+    "translation": "Aumentar",
+    "type": "verb",
+    "hint": "To become larger in amount or size.",
+    "example": "Prices continue to increase every year."
+  },
+  {
+    "level": "B2",
+    "word": "JUDGMENT",
+    "translation": "Juicio",
+    "type": "noun",
+    "hint": "The ability to make considered decisions.",
+    "example": "You should use your own judgment here."
+  },
+  {
+    "level": "B2",
+    "word": "KINDNESS",
+    "translation": "Bondad",
+    "type": "noun",
+    "hint": "The quality of being friendly and generous.",
+    "example": "I will never forget your kindness."
+  },
+  {
+    "level": "B2",
+    "word": "LEISURE",
+    "translation": "Ocio",
+    "type": "noun",
+    "hint": "Time when one is not working or occupied.",
+    "example": "I enjoy painting in my leisure time."
+  },
+  {
+    "level": "B2",
+    "word": "MAINTAIN",
+    "translation": "Mantener",
+    "type": "verb",
+    "hint": "To keep something in good condition.",
+    "example": "It is hard to maintain a large garden."
+  },
+  {
+    "level": "B2",
+    "word": "NEGATIVE",
+    "translation": "Negativo",
+    "type": "adjective",
+    "hint": "Expressing or meaning the answer no.",
+    "example": "Stop focusing on the negative things."
+  },
+  {
+    "level": "B2",
+    "word": "OBVIOUS",
+    "translation": "Obvio",
+    "type": "adjective",
+    "hint": "Easy to see or understand.",
+    "example": "The answer to the question was obvious."
+  },
+  {
+    "level": "B2",
+    "word": "PRESSURE",
+    "translation": "Presión",
+    "type": "noun",
+    "hint": "The force produced by pressing on something.",
+    "example": "I feel a lot of pressure at work lately."
+  },
+  {
+    "level": "B2",
+    "word": "REACTION",
+    "translation": "Reacción",
+    "type": "noun",
+    "hint": "Something done in response to an event.",
+    "example": "What was his reaction to the news?"
+  },
+  {
+    "level": "B2",
+    "word": "SPECIFIC",
+    "translation": "Específico",
+    "type": "adjective",
+    "hint": "Relating clearly to one particular thing.",
+    "example": "Could you be more specific about the plan?"
+  },
+  {
+    "level": "B2",
+    "word": "THREATEN",
+    "translation": "Amenazar",
+    "type": "verb",
+    "hint": "To say you will cause trouble if you don't get your way.",
+    "example": "The dark clouds threaten to bring rain."
+  },
+  {
+    "level": "B2",
+    "word": "VALUABLE",
+    "translation": "Valioso",
+    "type": "adjective",
+    "hint": "Worth a lot of money or very important.",
+    "example": "She gave me some valuable advice."
+  },
+  {
+    "level": "C1",
+    "word": "ABSTRACT",
+    "translation": "Abstracto",
+    "type": "adjective",
+    "hint": "Existing in thought but not having physical form.",
+    "example": "The concept of beauty is quite abstract."
+  },
+  {
+    "level": "C1",
+    "word": "ADVOCATE",
+    "translation": "Abogar",
+    "type": "verb",
+    "hint": "To publicly support a particular policy or cause.",
+    "example": "They advocate for better human rights."
+  },
+  {
+    "level": "C1",
+    "word": "COGNITIVE",
+    "translation": "Cognitivo",
+    "type": "adjective",
+    "hint": "Relating to the process of thought.",
+    "example": "The child is showing rapid cognitive growth."
+  },
+  {
+    "level": "C1",
+    "word": "DEPICT",
+    "translation": "Representar",
+    "type": "verb",
+    "hint": "To show or represent by a drawing or painting.",
+    "example": "The paintings depict life in the old city."
+  },
+  {
+    "level": "C1",
+    "word": "ELOQUENT",
+    "translation": "Elocuente",
+    "type": "adjective",
+    "hint": "Fluent or persuasive in speaking or writing.",
+    "example": "She gave an eloquent speech at the ceremony."
+  },
+  {
+    "level": "C1",
+    "word": "FEASIBLE",
+    "translation": "Factible",
+    "type": "adjective",
+    "hint": "Possible to do easily or conveniently.",
+    "example": "The plan is economically feasible."
+  },
+  {
+    "level": "C1",
+    "word": "GENUINE",
+    "translation": "Genuino",
+    "type": "adjective",
+    "hint": "Truly what something is said to be; authentic.",
+    "example": "He has a genuine interest in local history."
+  },
+  {
+    "level": "C1",
+    "word": "HIERARCHY",
+    "translation": "Jerarquía",
+    "type": "noun",
+    "hint": "A system where members are ranked by status.",
+    "example": "The company has a very rigid hierarchy."
+  },
+  {
+    "level": "C1",
+    "word": "INHERENT",
+    "translation": "Inherente",
+    "type": "adjective",
+    "hint": "Existing in something as a permanent attribute.",
+    "example": "There are inherent risks in this investment."
+  },
+  {
+    "level": "C1",
+    "word": "LEGITIMATE",
+    "translation": "Legítimo",
+    "type": "adjective",
+    "hint": "Conforming to the law or to rules.",
+    "example": "The government is considered legitimate."
+  },
+  {
+    "level": "C1",
+    "word": "MITIGATE",
+    "translation": "Mitigar",
+    "type": "verb",
+    "hint": "To make something bad less severe or painful.",
+    "example": "Steps were taken to mitigate the damage."
+  },
+  {
+    "level": "C1",
+    "word": "NOTION",
+    "translation": "Noción",
+    "type": "noun",
+    "hint": "A conception of or belief about something.",
+    "example": "I have no notion of what he means."
+  },
+  {
+    "level": "C1",
+    "word": "OBSCURE",
+    "translation": "Oscuro",
+    "type": "adjective",
+    "hint": "Not discovered or known about; uncertain.",
+    "example": "The origins of the custom are obscure."
+  },
+  {
+    "level": "C1",
+    "word": "PARADIGM",
+    "translation": "Paradigma",
+    "type": "noun",
+    "hint": "A typical example or pattern of something.",
+    "example": "There is a new paradigm in modern physics."
+  },
+  {
+    "level": "C1",
+    "word": "QUANDARY",
+    "translation": "Dilema",
+    "type": "noun",
+    "hint": "A state of perplexity or uncertainty.",
+    "example": "He was in a quandary about which job to take."
+  },
+  {
+    "level": "C1",
+    "word": "REDUNDANT",
+    "translation": "Redundante",
+    "type": "adjective",
+    "hint": "No longer needed or useful; superfluous.",
+    "example": "The extra safety system is redundant."
+  },
+  {
+    "level": "C1",
+    "word": "SCRUTINY",
+    "translation": "Escrutinio",
+    "type": "noun",
+    "hint": "Critical observation or examination.",
+    "example": "The proposal is under close scrutiny."
+  },
+  {
+    "level": "C1",
+    "word": "TANGIBLE",
+    "translation": "Tangible",
+    "type": "adjective",
+    "hint": "Perceptible by touch; clear and real.",
+    "example": "The silence was almost tangible."
+  },
+  {
+    "level": "C1",
+    "word": "UNDERLIE",
+    "translation": "Subyacer",
+    "type": "verb",
+    "hint": "To be the cause or basis of something.",
+    "example": "Many factors underlie the current crisis."
+  },
+  {
+    "level": "C1",
+    "word": "VERSATILE",
+    "translation": "Versátil",
+    "type": "adjective",
+    "hint": "Able to adapt or be used in many ways.",
+    "example": "He is a versatile actor who plays many roles."
+  }
+]

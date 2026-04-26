@@ -181,49 +181,210 @@ export function calculateLevel(score, total) {
   return 'C1';
 }
 
-/** Obtener preguntas para un quiz de lectura (Exactamente 15 preguntas) */
-export async function getQuestionsByReading(readingId) {
+/**
+ * Genera 5 preguntas de comprensión basadas en el contenido REAL del texto.
+ * Si la BD tiene preguntas, las usa. Si no, genera automáticamente del texto.
+ */
+export async function getQuestionsByReading(readingId, readingContent) {
+  const QUIZ_SIZE = 5;
   try {
     const { data, error } = await supabase
       .from('reading_questions')
       .select('*')
       .eq('reading_id', readingId);
-      
-    if (!error && data && data.length >= 15) {
-      // Retornar al azar 15 preguntas
-      return data.sort(() => 0.5 - Math.random()).slice(0, 15);
-    } else if (!error && data && data.length > 0) {
-      // Si hay menos de 15, retorna las que hay, rellenando con genericas
-      const questions = [...data];
-      const fallback = getFallbackQuestions();
-      while (questions.length < 15) {
-        questions.push(fallback[questions.length % fallback.length]);
-      }
-      return questions;
+
+    if (!error && data && data.length >= QUIZ_SIZE) {
+      return data.sort(() => 0.5 - Math.random()).slice(0, QUIZ_SIZE);
     }
+
+    // Si hay algunas preguntas en BD pero no suficientes, las mezclamos con generadas del texto
+    const dbQuestions = (!error && data && data.length > 0) ? data : [];
+    const generated = readingContent ? generateQuestionsFromText(readingContent, QUIZ_SIZE) : getGenericFallback();
+    const combined = [...dbQuestions, ...generated];
+    return combined.slice(0, QUIZ_SIZE);
+
   } catch (e) {
-    console.warn("Using fallback quiz questions", e);
+    console.warn("Generando preguntas del texto...", e);
   }
-  
-  return getFallbackQuestions().slice(0, 15);
+
+  return readingContent
+    ? generateQuestionsFromText(readingContent, QUIZ_SIZE)
+    : getGenericFallback().slice(0, QUIZ_SIZE);
 }
 
-function getFallbackQuestions() {
+/**
+ * Analizador de texto que extrae oraciones clave y construye preguntas
+ * de comprensión verdaderas basadas en el contenido real.
+ */
+function generateQuestionsFromText(text, count = 5) {
+  // 1. Limpiar y dividir el texto en oraciones
+  const sentences = text
+    .replace(/\n+/g, ' ')
+    .split(/(?<=[.!?])\s+/)
+    .map(s => s.trim())
+    .filter(s => s.length > 30 && s.split(' ').length >= 5);
+
+  if (sentences.length < 3) return getGenericFallback().slice(0, count);
+
+  // 2. Extraer las palabras clave del texto (sustantivos/conceptos relevantes)
+  const allWords = text.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/);
+  const stopWords = new Set(['the','a','an','is','are','was','were','to','of','and','in','it','that','this',
+    'for','on','with','as','at','by','from','or','but','not','be','been','has','have','had','its',
+    'their','they','he','she','we','you','i','my','your','our','his','her','can','will','do','did',
+    'what','when','where','who','how','which','there','so','if','than','then','about','more']);
+  const keywords = [...new Set(allWords.filter(w => w.length > 4 && !stopWords.has(w)))];
+
+  // 3. Barajar oraciones para variedad
+  const shuffled = [...sentences].sort(() => 0.5 - Math.random());
+  const picked = shuffled.slice(0, Math.min(count * 2, shuffled.length));
+
+  const questions = [];
+
+  // ── Plantilla A: "According to the text, what is said about [keyword]?" ──
+  const makeKeywordQ = (sentence, kw) => {
+    const kwDisplay = kw.charAt(0).toUpperCase() + kw.slice(1);
+    // Extraer una frase corta que responda la pregunta (primeras 6 palabras del sentence)
+    const shortAnswer = sentence.split(' ').slice(0, 7).join(' ').replace(/[,;]$/, '');
+    const distractors = generateDistractors(shortAnswer, sentence, keywords);
+    const allOpts = shuffle([shortAnswer, ...distractors.slice(0, 3)]);
+    return {
+      question: `According to the text, which statement about "${kwDisplay}" is most accurate?`,
+      options: allOpts,
+      correct_option: allOpts.indexOf(shortAnswer)
+    };
+  };
+
+  // ── Plantilla B: "Complete the sentence from the text: [sentence with gap]" ──
+  const makeCompletionQ = (sentence) => {
+    const words = sentence.split(' ');
+    if (words.length < 6) return null;
+    // Elegir una palabra "importante" en la mitad de la oración
+    const midPoint = Math.floor(words.length / 2);
+    let gapIdx = midPoint;
+    for (let i = midPoint; i < words.length; i++) {
+      const clean = words[i].replace(/[^a-zA-Z]/g, '');
+      if (clean.length > 3 && !stopWords.has(clean.toLowerCase())) { gapIdx = i; break; }
+    }
+    const answer = words[gapIdx].replace(/[^a-zA-Z]/g, '');
+    if (!answer || answer.length < 3) return null;
+
+    const blanked = [...words];
+    blanked[gapIdx] = '______';
+    const questionSentence = blanked.join(' ');
+
+    // Distractores: palabras similares del texto
+    const pool = keywords.filter(w => w !== answer.toLowerCase() && Math.abs(w.length - answer.length) <= 3);
+    const wrongOpts = pool.sort(() => 0.5 - Math.random()).slice(0, 3).map(w => w.charAt(0).toUpperCase() + w.slice(1));
+    while (wrongOpts.length < 3) wrongOpts.push(['quickly', 'carefully', 'important', 'different', 'special'].find(x => x !== answer.toLowerCase()) || 'often');
+
+    const allOpts = shuffle([answer, ...wrongOpts.slice(0, 3)]);
+    return {
+      question: `Complete the sentence from the text: "${questionSentence}"`,
+      options: allOpts,
+      correct_option: allOpts.indexOf(answer)
+    };
+  };
+
+  // ── Plantilla C: "What does the text say about...?" (Verdadero/Falso style) ──
+  const makeTrueFalseQ = (sentence) => {
+    const shortened = sentence.length > 80 ? sentence.substring(0, 80) + '...' : sentence;
+    // Crear una versión modificada (falsa)
+    const words = sentence.split(' ');
+    const falseSentence = createFalseSentence(sentence, keywords, stopWords);
+    const opts = shuffle([shortened, falseSentence, 'The text does not mention this topic.', 'This contradicts the main idea.']);
+    return {
+      question: `Which of the following appears in the text?`,
+      options: opts,
+      correct_option: opts.indexOf(shortened)
+    };
+  };
+
+  // ── Plantilla D: "What is the main idea of the text?" ──
+  const makeMainIdeaQ = (text, title) => {
+    // Usar la primera oración como idea principal
+    const firstSentence = sentences[0] || '';
+    const short = firstSentence.split(' ').slice(0, 8).join(' ');
+    const distractors = [
+      'A fictional story with no real information.',
+      'A list of grammar rules for beginners.',
+      'A personal diary entry about daily life.',
+    ];
+    const allOpts = shuffle([short, ...distractors]);
+    return {
+      question: `What is the main topic of this reading?`,
+      options: allOpts,
+      correct_option: allOpts.indexOf(short)
+    };
+  };
+
+  // ── Construir las 5 preguntas ──
+  // Pregunta 1: Tema principal (siempre)
+  questions.push(makeMainIdeaQ(text));
+
+  // Preguntas 2-3: Completar oración (basadas en oraciones distintas)
+  for (let i = 0; i < picked.length && questions.length < 3; i++) {
+    const q = makeCompletionQ(picked[i]);
+    if (q) questions.push(q);
+  }
+
+  // Pregunta 4: Verdadero/Falso con fragmento real
+  if (picked[1]) questions.push(makeTrueFalseQ(picked[1]));
+
+  // Pregunta 5: Keyword (si hay keywords disponibles)
+  const kw = keywords[Math.floor(Math.random() * Math.min(keywords.length, 10))];
+  const kwSentence = sentences.find(s => s.toLowerCase().includes(kw)) || picked[0];
+  if (kw && kwSentence && questions.length < 5) questions.push(makeKeywordQ(kwSentence, kw));
+
+  // Rellenar si no llegamos a 5
+  while (questions.length < count) {
+    const extra = makeCompletionQ(sentences[questions.length % sentences.length]);
+    questions.push(extra || getGenericFallback()[questions.length]);
+  }
+
+  return questions.slice(0, count);
+}
+
+// ── Helpers ──
+
+function generateDistractors(answer, sentence, keywords) {
+  const ansWords = answer.toLowerCase().split(' ');
+  // Crear distractores plausibles modificando el answer
+  const d1 = keywords.filter(w => !ansWords.includes(w)).slice(0, 1)[0] || 'always';
+  const swapMap = { 'not': '', 'always': 'never', 'many': 'few', 'first': 'last', 'can': 'cannot' };
+  let d2 = answer;
+  for (const [k, v] of Object.entries(swapMap)) {
+    if (d2.toLowerCase().includes(k)) { d2 = d2.toLowerCase().replace(k, v); break; }
+  }
   return [
-    { question: "What is the primary theme of the text?", options: ["Historical context", "Author's personal life", "Detailed scientific data", "A general overview and key facts"], correct_option: 3 },
-    { question: "Which of the following best describes the author's tone?", options: ["Informative and clear", "Angry and frustrated", "Humorous and sarcastic", "Sad and melancholic"], correct_option: 0 },
-    { question: "According to the reading, what is a key takeaway?", options: ["The issue is unsolvable.", "It requires a bit of effort and practice.", "It provides a clear pathway forward.", "It only applies to complete experts."], correct_option: 2 },
-    { question: "What can be inferred from the vocabulary used?", options: ["The topic is outdated.", "The subject matter is important.", "No one cares about this issue.", "It is only a temporary trend."], correct_option: 1 },
-    { question: "How should a student approach this topic according to the text?", options: ["By ignoring the difficult words.", "By practicing steadily every day.", "By translating the entire text at once.", "By memorizing everything."], correct_option: 1 },
-    { question: "Which of the following words best matches the context of the reading?", options: ["Development", "Irrelevance", "Failure", "Boredom"], correct_option: 0 },
-    { question: "What is the main purpose of the opening paragraph?", options: ["To introduce the topic", "To provide a conclusion", "To confuse the reader", "To summarize everything"], correct_option: 0 },
-    { question: "Who is the most likely target audience for this text?", options: ["Experts in the field", "General learners", "Children under five", "Animals"], correct_option: 1 },
-    { question: "What does the text imply about the future of this topic?", options: ["It will disappear.", "It is uncertain.", "It holds promise and relevance.", "It is already in the past."], correct_option: 2 },
-    { question: "Which statement would the author most likely agree with?", options: ["Consistency is key.", "Learning is too hard.", "We should give up.", "Translations are always perfect."], correct_option: 0 },
-    { question: "What structural method does the author use?", options: ["Chronological order", "Explaining concepts with context", "Random thoughts", "Only bullet points"], correct_option: 1 },
-    { question: "How does the passage conclude?", options: ["With a strong recommendation", "Without any resolution", "With an unrelated joke", "With a detailed warning"], correct_option: 0 },
-    { question: "What is the most challenging aspect mentioned?", options: ["Finding motivation", "Mastering the nuances", "Reading the instructions", "Nothing is challenging"], correct_option: 1 },
-    { question: "What role does context play in this reading?", options: ["It is irrelevant", "It helps understand the true meaning", "It confuses the core message", "It is historically inaccurate"], correct_option: 1 },
-    { question: "What is the ultimate goal presented by the text?", options: ["To master the subject comfortably", "To pass a single test", "To memorize facts", "To translate word by word"], correct_option: 0 }
+    answer.split(' ').reverse().join(' ').slice(0, answer.length),
+    d2 !== answer ? d2 : `${d1} ${answer.split(' ').slice(-2).join(' ')}`,
+    `This information is not in the text.`,
+    `The opposite of what the text says.`
+  ];
+}
+
+function createFalseSentence(sentence, keywords, stopWords) {
+  const words = sentence.split(' ');
+  const content = words.filter(w => {
+    const clean = w.replace(/[^a-zA-Z]/g, '').toLowerCase();
+    return clean.length > 4 && !stopWords.has(clean);
+  });
+  if (content.length === 0) return 'This was not mentioned in the text.';
+  const replaced = keywords.filter(k => !sentence.toLowerCase().includes(k)).slice(0, 1)[0] || 'very different';
+  const target = content[Math.floor(Math.random() * content.length)];
+  return sentence.replace(target, replaced).substring(0, 80) + '...';
+}
+
+function shuffle(arr) {
+  return [...arr].sort(() => 0.5 - Math.random());
+}
+
+function getGenericFallback() {
+  return [
+    { question: "What is the primary theme of the text?", options: ["Historical context", "Author's personal life", "Scientific data only", "A general overview of key facts"], correct_option: 3 },
+    { question: "Which best describes the author's tone?", options: ["Informative and clear", "Angry and frustrated", "Humorous and sarcastic", "Sad and melancholic"], correct_option: 0 },
+    { question: "What is a key takeaway from the reading?", options: ["The issue is unsolvable.", "Effort and practice are needed.", "Only experts can understand it.", "The topic is irrelevant today."], correct_option: 1 },
+    { question: "What can be inferred from the vocabulary?", options: ["The topic is outdated.", "The subject matter is important.", "Nobody cares about this.", "It is a temporary trend."], correct_option: 1 },
+    { question: "What is the ultimate goal presented?", options: ["To master the subject comfortably", "To pass a single test", "To memorize all facts", "To translate word by word"], correct_option: 0 },
   ];
 }

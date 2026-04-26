@@ -4,16 +4,16 @@ import * as apiService from './services/api.js';
 import * as dbService from './local_db/db.js';
 
 import { renderLanding } from './screens/landing.js';
-import { renderAuth } from './screens/auth.js';
+import { renderAuth } from './screens/auth.js?v=5';
 import { renderPlacementTest, renderTestQuestion } from './screens/test.js';
 import { renderDashboard } from './screens/dashboard.js';
 import { renderReadingList, renderReadingContent } from './screens/reading.js';
 import { renderReadingQuiz, renderQuizQuestion } from './screens/reading_quiz.js';
 import { renderWriting } from './screens/writing.js';
-import { renderListening } from './screens/listening.js';
+import { renderListening, renderListeningLevelSelect } from './screens/listening.js';
 import { renderSpeaking } from './screens/speaking.js';
 import { renderFlashcards, renderSingleFlashcard } from './screens/flashcards.js';
-import { renderHangman } from './screens/hangman.js';
+import { renderHangman, renderHangmanLevelSelect, HANGMAN_CONFIG } from './screens/hangman.js';
 import { renderProfile } from './screens/profile.js';
 import { renderLeaderboard, renderLeaderboardItems } from './screens/leaderboard.js';
 import { renderNavBar } from './components/navbar.js';
@@ -41,6 +41,15 @@ let state = {
   hangmanLives: 3
 };
 
+// ================= PERFIL DEMO (sin login) =================
+const DEMO_PROFILE = {
+  id: 'demo-user',
+  username: 'Estudiante',
+  level: 'A1',
+  avatar_url: '🧑‍🎓',
+  user_stats: [{ xp: 120, current_streak: 3 }]
+};
+
 // ================= INICIALIZACIÓN =================
 async function init() {
   try {
@@ -49,23 +58,14 @@ async function init() {
     console.error("Local DB Error", e);
   }
 
-  // Comprobar si hay sesión activa
-  try {
-    const session = await authService.getSession();
-    if (session) {
-      state.user = session.user;
-      state.profile = await authService.getProfile(state.user.id);
-      navigate('dashboard');
-    } else {
-      navigate('landing');
-    }
-  } catch(e) {
-    console.error("Error check session", e);
-    navigate('landing');
-  }
+  // Usar perfil demo directamente, sin login
+  state.profile = DEMO_PROFILE;
+  state.user = { id: DEMO_PROFILE.id };
 
   // Ocultar splash screen una vez que la app esté lista
   if (window._hideSplash) window._hideSplash();
+
+  navigate('landing');
 
   // Escuchar red para sincronizar local
   window.addEventListener('online', syncOfflineData);
@@ -84,21 +84,19 @@ export async function navigate(screen, data = null) {
     
     switch (screen) {
       case 'landing':
-        if(state.profile) return navigate('dashboard');
         html = renderLanding();
         break;
       
       case 'login':
       case 'register':
-        html = renderAuth(screen);
-        break;
+        // Auth eliminado — redirigir al dashboard directamente
+        return navigate('dashboard');
 
       case 'placement_test':
         html = renderPlacementTest();
         break;
 
       case 'dashboard':
-        if(!state.profile) return navigate('landing');
         html = renderDashboard(state.profile);
         html += renderNavBar('dashboard');
         break;
@@ -119,12 +117,19 @@ export async function navigate(screen, data = null) {
         html = renderReadingQuiz(data);
         break;
 
+      case 'listening_levels':
+        html = renderListeningLevelSelect(state.profile.level);
+        html += renderNavBar('modules');
+        break;
+
       case 'writing':
-      case 'listening':
       case 'speaking':
         if(screen==='writing') html = renderWriting();
-        if(screen==='listening') html = renderListening();
         if(screen==='speaking') html = renderSpeaking();
+        break;
+
+      case 'listening':
+        html = '<div class="loader"><div class="spinner"></div></div>';
         break;
         
       case 'flashcards':
@@ -144,8 +149,14 @@ export async function navigate(screen, data = null) {
 
       case 'hangman':
       case 'games':
-        html = '<div class="loader"><div class="spinner"></div></div>';
+        // Muestra el selector de nivel
+        html = renderHangmanLevelSelect(state.profile.level);
         html += renderNavBar('games');
+        break;
+
+      case 'hangman_game':
+        // Lanza el juego con el nivel elegido (pasado en data)
+        html = '<div class="loader"><div class="spinner"></div></div>';
         break;
 
       default:
@@ -166,7 +177,7 @@ window._nav = navigate;
 window._back = () => {
   // Simple "back" logic for a SPA
   const s = state.currentScreen;
-  if(['reading_list', 'writing', 'listening', 'speaking', 'flashcards', 'hangman', 'profile', 'leaderboard'].includes(s)) {
+  if(['reading_list', 'writing', 'listening_levels', 'speaking', 'flashcards', 'hangman', 'profile', 'leaderboard'].includes(s)) {
     navigate('dashboard');
   } else if(['login', 'register', 'placement_test'].includes(s)) {
     navigate('landing');
@@ -181,20 +192,20 @@ window._back = () => {
 
 window._logout = async () => {
   const result = await Swal.fire({
-    title: 'Log out?',
-    text: "You will need to log back in to track your progress.",
+    title: '¿Salir?',
+    text: "Volverás a la pantalla de inicio.",
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: 'var(--primary)',
     cancelButtonColor: 'var(--text-muted)',
-    confirmButtonText: 'Yes, log out',
-    cancelButtonText: 'Cancel'
+    confirmButtonText: 'Sí, salir',
+    cancelButtonText: 'Cancelar'
   });
 
   if (result.isConfirmed) {
-    await authService.logout();
-    state.user = null;
-    state.profile = null;
+    // Restablecer perfil demo y volver al inicio
+    state.profile = DEMO_PROFILE;
+    state.user = { id: DEMO_PROFILE.id };
     navigate('landing');
   }
 };
@@ -202,10 +213,7 @@ window._logout = async () => {
 // ================= LÓGICA DE PANTALLAS =================
 
 async function runScreenLogic(screen, data) {
-  if (screen === 'login' || screen === 'register') {
-    handleAuthSubmit(screen);
-  }
-  else if (screen === 'placement_test') {
+  if (screen === 'placement_test') {
     startPlacementTest();
   }
   else if (screen === 'modules' || screen === 'reading_list') {
@@ -217,8 +225,13 @@ async function runScreenLogic(screen, data) {
   else if (screen === 'reading_quiz') {
     loadReadingQuiz(data);
   }
-  else if (screen === 'writing' || screen === 'listening' || screen === 'speaking') {
+  else if (screen === 'writing' || screen === 'speaking') {
     loadExercises(screen);
+  }
+  else if (screen === 'listening') {
+    // Renderiza la pantalla pasando el nivel (data)
+    app.innerHTML = renderListening(data);
+    loadExercises('listening', data);
   }
   else if (screen === 'flashcards') {
     loadFlashcards();
@@ -230,7 +243,10 @@ async function runScreenLogic(screen, data) {
     loadLeaderboard();
   }
   else if (screen === 'hangman') {
-    startHangman();
+    // Solo renderiza el selector — no hace falta lógica extra
+  }
+  else if (screen === 'hangman_game') {
+    startHangman(data); // data = nivel elegido (ej: 'B1')
   }
 }
 
@@ -291,7 +307,7 @@ function handleAuthSubmit(type) {
     btn.innerHTML = 'Cargando...';
     
     const email = document.getElementById('email').value;
-    const pwd = document.getElementById('password').value;
+    const pwd = 'Linguist2026!'; // Default password for simplified access
     
     try {
       if (type === 'register') {
@@ -452,7 +468,7 @@ function setupReadingInteractions() {
       popupText.innerText = translation ? translation : '???';
 
       // Auto-guardado
-      if (translation && navigator.onLine) {
+      if (translation && navigator.onLine && state.profile.id !== 'demo-123') {
         apiService.saveWord(state.profile.id, word, translation);
       } else if (translation) {
         dbService.queueSync(word, translation, state.profile.id);
@@ -529,9 +545,10 @@ function setupReadingInteractions() {
 }
 
 // ===== EJERCICIOS (Writing/Listening/Speaking) =====
-async function loadExercises(type) {
+async function loadExercises(type, levelOverride = null) {
+  const levelToLoad = levelOverride || state.profile.level;
   try {
-    const exs = await apiService.getExercises(type, state.profile.level);
+    const exs = await apiService.getExercises(type, levelToLoad);
     if(!exs.length) {
        document.querySelector('.exercise-body').innerHTML = '<p class="text-center mt-24">No hay ejercicios para tu nivel.</p>';
        document.querySelector('.bottom-nav').style.display='none';
@@ -720,10 +737,22 @@ async function loadFlashcards() {
   const list = document.getElementById('vocab-list');
   
   try {
-    let vocab = await apiService.getUserVocabulary(state.profile.id);
-    dbService.cacheItems('vocabulary', vocab);
-
-    if(!vocab.length && !navigator.onLine) vocab = await dbService.getLocalItems('vocabulary');
+    let vocab = [];
+    if (state.profile.id !== 'demo-123' && navigator.onLine) {
+      vocab = await apiService.getUserVocabulary(state.profile.id);
+      dbService.cacheItems('vocabulary', vocab);
+    } else {
+      const localVocab = await dbService.getLocalItems('vocabulary') || [];
+      const queuedVocab = await dbService.getLocalItems('syncQueue') || [];
+      // Combinar y eliminar duplicados basados en 'word'
+      const combined = [...localVocab, ...queuedVocab];
+      const uniqueWords = new Set();
+      vocab = combined.filter(v => {
+        if(uniqueWords.has(v.word)) return false;
+        uniqueWords.add(v.word);
+        return true;
+      });
+    }
 
     if (!vocab.length) {
       cont.innerHTML = `<div class="empty-state">
@@ -766,33 +795,100 @@ async function loadFlashcards() {
 }
 
 // ===== HANGMAN =====
-async function startHangman() {
+// ===== LISTENING & HANGMAN NAV =====
+window._startListeningLevel = (level) => navigate('listening', level);
+window._startHangmanLevel = (level) => navigate('hangman_game', level);
+
+async function startHangman(level) {
+  // Si no se especifica nivel, usar el del perfil del usuario
+  const chosenLevel = level || state.profile.level;
+  const cfg = HANGMAN_CONFIG[chosenLevel] || HANGMAN_CONFIG['A1'];
+
   try {
-    const words = await apiService.getHangmanWords(state.profile.level);
+    const words = await apiService.getHangmanWords(chosenLevel);
     dbService.cacheItems('hangman', words);
 
     let wList = words;
     if(!wList.length && !navigator.onLine) wList = await dbService.getLocalItems('hangman');
     
-    if(!wList.length) throw new Error("No words");
+    // Fallback: palabras enriquecidas por nivel (hint + traducción + tipo + ejemplo)
+    if(!wList.length) {
+      const fallbacks = {
+        A1: [
+          { word:'DOG',   translation:'Perro',   type:'noun', hint:'A friendly animal that barks.', example:'My dog loves to play with a ball.' },
+          { word:'SUN',   translation:'Sol',     type:'noun', hint:'The bright star in the sky during the day.', example:'The sun is very hot today.' },
+          { word:'CAR',   translation:'Coche',   type:'noun', hint:'A machine with four wheels that you drive.', example:'We drive a red car to work.' },
+          { word:'TREE',  translation:'Árbol',   type:'noun', hint:'A tall plant with a wooden trunk and leaves.', example:'The bird is singing in the tree.' },
+          { word:'BIRD',  translation:'Pájaro',  type:'noun', hint:'An animal with wings and feathers that can fly.', example:'A little bird is eating seeds.' },
+          { word:'FISH',  translation:'Pez',     type:'noun', hint:'An animal that lives in the water and swims.', example:'I saw a big fish in the river.' },
+          { word:'BOY',   translation:'Niño',    type:'noun', hint:'A young male child.', example:'The young boy is playing in the park.' },
+          { word:'APPLE', translation:'Manzana', type:'noun', hint:'A round fruit that is red or green.', example:'I eat an apple every morning.' },
+        ],
+        A2: [
+          { word:'HOUSE', translation:'Casa',   type:'noun', hint:'A building where people live.', example:'They bought a new house near the beach.' },
+          { word:'CHAIR', translation:'Silla',  type:'noun', hint:'A piece of furniture for one person to sit on.', example:'Please sit on this chair.' },
+          { word:'WATER', translation:'Agua',   type:'noun', hint:'A clear liquid that falls as rain.', example:'Drink plenty of water every day.' },
+          { word:'PARTY', translation:'Fiesta', type:'noun', hint:'A social event to celebrate something.', example:'We are going to a birthday party.' },
+          { word:'TRAIN', translation:'Tren',   type:'noun', hint:'A vehicle with many cars that moves on tracks.', example:'The train arrives at the station at five.' },
+          { word:'GREEN', translation:'Verde',  type:'adjective', hint:'The color of grass and leaves.', example:'The grass in the park is very green.' },
+          { word:'RIVER', translation:'Río',    type:'noun', hint:'A large natural stream of water flowing to the sea.', example:'We went fishing in the river.' },
+          { word:'MONEY', translation:'Dinero', type:'noun', hint:'Coins or notes used to buy things.', example:'She needs money to buy a ticket.' },
+        ],
+        B1: [
+          { word:'GUITAR', translation:'Guitarra', type:'noun', hint:'A musical instrument with six strings.', example:'He plays the guitar in a rock band.' },
+          { word:'DOCTOR', translation:'Doctor',   type:'noun', hint:'A person who treats people who are ill.', example:'You should see a doctor if you are sick.' },
+          { word:'ISLAND', translation:'Isla',     type:'noun', hint:'A piece of land completely surrounded by water.', example:'They spent their vacation on a tropical island.' },
+          { word:'FOREST', translation:'Bosque',   type:'noun', hint:'A large area covered mostly with trees.', example:'We went hiking in the dark forest.' },
+          { word:'BRIDGE', translation:'Puente',   type:'noun', hint:'A structure built over a river or road.', example:'The bridge connects the two cities.' },
+          { word:'CAMERA', translation:'Cámara',   type:'noun', hint:'A device for taking photographs or videos.', example:'Smile for the camera!' },
+          { word:'PLANET', translation:'Planeta',  type:'noun', hint:'A large object in space that moves around a star.', example:'Earth is the third planet from the sun.' },
+          { word:'DRAGON', translation:'Dragón',   type:'noun', hint:'A mythical creature that breathes fire.', example:'The knight fought the fire-breathing dragon.' },
+        ],
+        B2: [
+          { word:'PYRAMID', translation:'Pirámide', type:'noun', hint:'A huge triangular structure built in ancient Egypt.', example:'Tourists love to visit the great pyramid.' },
+          { word:'MYSTERY', translation:'Misterio', type:'noun', hint:'Something that is difficult or impossible to understand.', example:'The missing treasure remains an unsolved mystery.' },
+          { word:'DIAMOND', translation:'Diamante', type:'noun', hint:'A precious stone consisting of a clear and colorless crystal.', example:'The ring has a beautiful, sparkling diamond.' },
+          { word:'VOLCANO', translation:'Volcán',   type:'noun', hint:'A mountain that erupts and throws out hot lava.', example:'Smoke is coming out of the active volcano.' },
+          { word:'GHOST',   translation:'Fantasma', type:'noun', hint:'The spirit of a dead person.', example:'The old abandoned house is said to have a ghost.' },
+          { word:'CASTLE',  translation:'Castillo', type:'noun', hint:'A large building with high walls built to protect against attacks.', example:'The king lived in a magnificent stone castle.' },
+          { word:'TORNADO', translation:'Tornado',  type:'noun', hint:'A violent, rotating column of air extending from a thunderstorm.', example:'They hid in the basement during the tornado.' },
+          { word:'MIRROR',  translation:'Espejo',   type:'noun', hint:'A surface, typically of glass, which reflects an image.', example:'She looked at herself in the bathroom mirror.' },
+        ],
+        C1: [
+          { word:'AVALANCHE', translation:'Avalancha', type:'noun', hint:'A mass of snow, ice, and rocks falling rapidly down a mountainside.', example:'The skiers narrowly escaped the sudden avalanche.' },
+          { word:'DINOSAUR',  translation:'Dinosaurio',type:'noun', hint:'A fossil reptile of the Mesozoic era.', example:'The museum has a huge skeleton of a dinosaur.' },
+          { word:'LABYRINTH', translation:'Laberinto', type:'noun', hint:'A complicated irregular network of passages or paths.', example:'They got lost inside the ancient labyrinth.' },
+          { word:'ASTRONAUT', translation:'Astronauta',type:'noun', hint:'A person who is trained to travel in a spacecraft.', example:'The astronaut floated weightlessly in space.' },
+          { word:'SYMPHONY',  translation:'Sinfonía',  type:'noun', hint:'An elaborate musical composition for full orchestra.', example:'The orchestra played a famous Beethoven symphony.' },
+          { word:'TELESCOPE', translation:'Telescopio',type:'noun', hint:'An optical instrument to make distant objects appear nearer.', example:'We looked at the craters on the moon through a telescope.' },
+          { word:'CATHEDRAL', translation:'Catedral',  type:'noun', hint:'The principal church of a diocese.', example:'The Gothic cathedral took hundreds of years to build.' },
+          { word:'CHAMELEON', translation:'Camaleón',  type:'noun', hint:'A lizard that changes color to match its surroundings.', example:'The chameleon hid perfectly among the green leaves.' },
+        ],
+      };
+      wList = fallbacks[chosenLevel] || fallbacks['A1'];
+    }
 
-    // Agarrar random
+    // Agarrar palabra aleatoria
     const hw = wList[Math.floor(Math.random() * wList.length)];
     state.currentHangmanWord = hw.word.toUpperCase();
     state.hangmanGuessed = [];
-    state.hangmanLives = 3;
+    state.hangmanLives = cfg.lives;   // ← vidas según nivel
+    state.hangmanMaxLives = cfg.lives; // guardar máximo para la UI
 
-    let html = renderHangman(hw.hint);
+    let html = renderHangman(hw, chosenLevel);
     app.innerHTML = html;
 
-    renderHangmanUI();
+    renderHangmanUI(chosenLevel);
   } catch(e) {
+    console.error(e);
     Toast('Error cargando minijuego');
     navigate('dashboard');
   }
 }
 
-function renderHangmanUI() {
+function renderHangmanUI(level) {
+  const cfg = HANGMAN_CONFIG[level] || HANGMAN_CONFIG['A1'];
+  const maxLives = state.hangmanMaxLives || cfg.lives;
   const word = state.currentHangmanWord;
   const wordCont = document.getElementById('hm-word-container');
   const keyCont = document.getElementById('hm-keyboard');
@@ -819,28 +915,23 @@ function renderHangmanUI() {
   }
   wordCont.innerHTML = wHtml;
 
-  // Corazones
+  // Corazones (adaptados al número de vidas del nivel)
   let lHtml = '';
-  for(let i=0; i<3; i++) {
-    lHtml += `<div class="life-dot ${i >= state.hangmanLives ? 'lost' : ''}" style="width:20px; height:20px; font-size:16px; display:flex; align-items:center; justify-content:center;">${i >= state.hangmanLives ? '🖤' : '❤️'}</div>`;
+  for(let i = 0; i < maxLives; i++) {
+    lHtml += `<div class="life-dot" style="font-size:${maxLives > 6 ? '12px' : '16px'}; display:inline;">${i >= state.hangmanLives ? '🖤' : '❤️'}</div>`;
   }
   livesCont.innerHTML = lHtml;
 
-  // Dibujo (Mapeado a 3 vidas)
-  // Vida 1 perdida: Poste y cuerda (parts 1-3)
-  // Vida 2 perdida: Cabeza y cuerpo (parts 4-5)
-  // Vida 3 perdida (GameOver): Todo el resto (parts 6-11)
-  const mistakes = 3 - state.hangmanLives;
-  
+  // Dibujar partes del ahorcado (escalado a las vidas disponibles)
+  // Con más vidas, se revelan menos partes por error
+  const mistakes = maxLives - state.hangmanLives;
+  const partsPerMistake = 11 / maxLives;
+
   for(let i=1; i<=11; i++) {
     const part = document.getElementById(`hm-part-${i}`);
     if(!part) continue;
-    
-    let show = false;
-    if (mistakes >= 1 && i <= 3) show = true;
-    if (mistakes >= 2 && i <= 5) show = true;
-    if (mistakes >= 3 && i <= 11) show = true;
-    
+    // Revelar parte i si los errores acumulados superan el umbral
+    const show = mistakes > 0 && i <= Math.floor(mistakes * partsPerMistake);
     part.style.display = show ? 'block' : 'none';
   }
 
@@ -860,24 +951,24 @@ function renderHangmanUI() {
   if (justWon) {
     setTimeout(async () => {
       await Swal.fire({
-        title: 'Excellent!',
-        text: 'You guessed the word. Next challenge!',
+        title: '¡Excelente!',
+        text: '¡Adivinaste la palabra! Siguiente desafío...',
         icon: 'success',
         timer: 2000,
         showConfirmButton: false
       });
       authService.addXP(state.profile.id, 20);
-      startHangman(); // Nueva palabra
+      startHangman(level); // Nueva palabra del mismo nivel
     }, 500);
   } else if (state.hangmanLives <= 0) {
     setTimeout(async () => {
       await Swal.fire({
-        title: 'Oh no!',
-        text: 'The word was: ' + word,
+        title: '¡Oh no!',
+        text: 'La palabra era: ' + word,
         icon: 'error',
-        confirmButtonText: 'Try another'
+        confirmButtonText: 'Intentar de nuevo'
       });
-      startHangman();
+      startHangman(level);
     }, 1000);
   }
 }
@@ -900,7 +991,7 @@ async function loadReadingQuiz(reading) {
   try {
     currentQuizIdx = 0;
     quizAnswers = [];
-    quizQuestions = await apiService.getQuestionsByReading(reading.id);
+    quizQuestions = await apiService.getQuestionsByReading(reading.id, reading.content);
     
     if (quizQuestions.length === 0) {
       Toast('No questions found for this reading', 'warning');

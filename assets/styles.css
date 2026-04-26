@@ -1901,3 +1901,187 @@ a { text-decoration: none; color: inherit; }
 .screen {
   padding-bottom: 110px; /* Dar espacio para que la barra no tape el contenido */
 }
+
+/* ===== HANGMAN — SELECTOR DE NIVEL ===== */
+.hangman-level-screen {
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+}
+
+.hm-level-hero {
+  background: linear-gradient(135deg, #0F172A 0%, #1D4ED8 100%);
+  padding: 28px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.hm-level-hero-icon {
+  font-size: 56px;
+  animation: bounce 1.5s ease infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.hm-level-hero-text {
+  color: rgba(255,255,255,0.85);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.hm-level-hero-text strong {
+  color: #fff;
+  font-weight: 800;
+}
+
+.hm-level-list {
+  padding: 20px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hm-level-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 2px solid transparent;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.hm-level-card:hover {
+  border-color: var(--level-color, var(--primary));
+  transform: translateX(4px);
+  box-shadow: var(--shadow);
+}
+
+.hm-level-card.hm-level-active {
+  border-color: var(--level-color, var(--primary));
+  background: linear-gradient(135deg, rgba(255,255,255,1), rgba(255,255,255,0.85));
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+}
+
+.hm-level-emoji {
+  font-size: 32px;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card2);
+  border-radius: 14px;
+}
+
+.hm-level-info {
+  flex: 1;
+}
+
+.hm-level-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 3px;
+}
+
+.hm-level-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.hm-level-lives {
+  font-size: 11px;
+  letter-spacing: -1px;
+  flex-shrink: 0;
+}
+
+/* ===== HANGMAN — TARJETA DE PISTA ENRIQUECIDA ===== */
+.hangman-hint-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: 16px 18px;
+  margin: 0 16px 16px;
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid var(--primary);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hint-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hint-btn {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.hint-type-badge {
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+}
+
+.hint-description {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+  line-height: 1.5;
+}
+
+.hint-translation {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hint-example {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+
+.hint-example-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hint-example em {
+  font-style: italic;
+  color: var(--text-secondary);
+}

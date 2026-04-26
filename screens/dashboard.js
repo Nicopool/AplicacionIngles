@@ -66,10 +66,10 @@ export function renderDashboard(profile) {
           <div class="module-detail">12 Exercises</div>
         </div>
 
-        <div class="module-card" onclick="window._nav('listening')">
+        <div class="module-card" onclick="window._nav('listening_levels')">
           <div class="module-icon" style="background:#FCE7F3;color:#DB2777;">🎧</div>
           <div class="module-name">Listening Skills</div>
-          <div class="module-detail">Daily Podcast</div>
+          <div class="module-detail">Elige tu nivel</div>
         </div>
 
         <div class="module-card" onclick="window._nav('speaking')">

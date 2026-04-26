@@ -89,18 +89,6 @@ export function renderDashboard(profile) {
         </div>
       </div>
 
-      <!-- League -->
-      <div class="dash-league-card" onclick="window._nav('leaderboard')" style="cursor:pointer">
-        <div class="league-icon">
-          <span style="color:#fff">🎖️</span>
-          <div class="league-badge">1</div>
-        </div>
-        <div style="flex:1">
-          <div class="league-title">Silver League</div>
-          <div class="league-pos">#4 in global ranking</div>
-          <div class="league-link">View leaderboard</div>
-        </div>
-      </div>
 
     </div>
   `;

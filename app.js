@@ -15,7 +15,6 @@ import { renderSpeaking } from './screens/speaking.js';
 import { renderFlashcards, renderSingleFlashcard } from './screens/flashcards.js';
 import { renderHangman, renderHangmanLevelSelect, HANGMAN_CONFIG } from './screens/hangman.js';
 import { renderProfile } from './screens/profile.js';
-import { renderLeaderboard, renderLeaderboardItems } from './screens/leaderboard.js';
 import { renderNavBar } from './components/navbar.js';
 import { Toast } from './components/common.js';
 
@@ -142,11 +141,6 @@ export async function navigate(screen, data = null) {
         html += renderNavBar('none');
         break;
 
-      case 'leaderboard':
-        html = renderLeaderboard();
-        html += renderNavBar('none');
-        break;
-
       case 'hangman':
       case 'games':
         // Muestra el selector de nivel
@@ -177,7 +171,7 @@ window._nav = navigate;
 window._back = () => {
   // Simple "back" logic for a SPA
   const s = state.currentScreen;
-  if(['reading_list', 'writing', 'listening_levels', 'speaking', 'flashcards', 'hangman', 'profile', 'leaderboard'].includes(s)) {
+  if(['reading_list', 'writing', 'listening_levels', 'speaking', 'flashcards', 'hangman', 'profile'].includes(s)) {
     navigate('dashboard');
   } else if(['login', 'register', 'placement_test'].includes(s)) {
     navigate('landing');
@@ -238,9 +232,6 @@ async function runScreenLogic(screen, data) {
   }
   else if (screen === 'profile') {
     setupProfileInteractions();
-  }
-  else if (screen === 'leaderboard') {
-    loadLeaderboard();
   }
   else if (screen === 'hangman') {
     // Solo renderiza el selector — no hace falta lógica extra
@@ -1055,6 +1046,65 @@ async function finishReadingQuiz() {
   });
   
   await completeActivity(xpEarned);
+}
+
+// ===== PROFILE LOGIC =====
+let selectedAvatar = null;
+
+function setupProfileInteractions() {
+  const btnSave = document.getElementById('btn-save-profile');
+  const inputUser = document.getElementById('edit-username');
+  
+  selectedAvatar = state.profile.avatar_url || '👨‍🎓';
+
+  window._selectAvatar = (avatar) => {
+    selectedAvatar = avatar;
+    // UI Feedback
+    document.querySelectorAll('.avatar-option').forEach(el => {
+      el.classList.remove('selected');
+      el.style.border = '2px solid transparent';
+      el.style.background = '#F8FAFC';
+    });
+    const target = Array.from(document.querySelectorAll('.avatar-option')).find(el => el.innerText.trim() === avatar);
+    if(target) {
+      target.classList.add('selected');
+      target.style.border = '2px solid #2563EB';
+      target.style.background = '#DBEAFE';
+    }
+    document.getElementById('current-avatar').innerText = avatar;
+  };
+
+  btnSave.onclick = async () => {
+    const newUsername = inputUser.value.trim();
+    if(!newUsername) return Toast('Por favor ingresa un nombre', 'error');
+
+    if(state.profile.id === 'demo-123') {
+      state.profile.username = newUsername;
+      state.profile.avatar_url = selectedAvatar;
+      Toast('Perfil actualizado (Modo Demo)');
+      return navigate('dashboard');
+    }
+
+    try {
+      btnSave.innerText = 'Guardando...';
+      btnSave.disabled = true;
+
+      const updated = await apiService.updateProfile(state.profile.id, {
+        username: newUsername,
+        avatar_url: selectedAvatar
+      });
+
+      state.profile = { ...state.profile, ...updated };
+      Toast('¡Perfil actualizado con éxito!');
+      navigate('dashboard');
+    } catch(e) {
+      console.error(e);
+      Toast('Error actualizando perfil', 'error');
+    } finally {
+      btnSave.innerText = 'Guardar Cambios';
+      btnSave.disabled = false;
+    }
+  };
 }
 
 // ===== SYNC OFFLINE =====

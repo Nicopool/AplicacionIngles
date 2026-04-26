@@ -15,6 +15,18 @@ export async function getReadingByLevel(level) {
   return data;
 }
 
+/** Actualizar perfil del usuario */
+export async function updateProfile(userId, updates) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update(updates)
+    .eq('id', userId)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 // --- EXERCISES (Writing / Listening / Speaking) ---
 
 /** Obtener ejercicios por tipo y nivel */

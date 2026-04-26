@@ -241,51 +241,6 @@ async function runScreenLogic(screen, data) {
   }
 }
 
-// --- LOGIC: PROFILE ---
-let selectedAvatar = '';
-
-async function setupProfileInteractions() {
-  selectedAvatar = state.profile.avatar_url;
-  
-  window._selectAvatar = (avatar) => {
-    selectedAvatar = avatar;
-    document.querySelectorAll('.avatar-option').forEach(el => {
-      el.classList.toggle('selected', el.innerText === avatar);
-    });
-    document.getElementById('current-avatar').innerText = avatar;
-  };
-
-  document.getElementById('btn-save-profile').onclick = async () => {
-    const newUsername = document.getElementById('edit-username').value;
-    if(!newUsername) return Toast('Please enter a name', 'warning');
-
-    try {
-      const updated = await apiService.updateProfile(state.profile.id, {
-        username: newUsername,
-        avatar_url: selectedAvatar
-      });
-      state.profile = updated;
-      Toast('Profile updated!', 'success');
-      navigate('dashboard');
-    } catch (e) {
-      Toast('Error updating profile', 'error');
-    }
-  };
-}
-
-// --- LOGIC: LEADERBOARD ---
-async function loadLeaderboard() {
-  try {
-    const users = await apiService.getLeaderboard(20);
-    const { podiumHtml, listHtml } = renderLeaderboardItems(users);
-    
-    document.getElementById('podium-container').innerHTML = podiumHtml;
-    document.getElementById('leaderboard-list').innerHTML = listHtml;
-  } catch (e) {
-    console.error(e);
-    Toast('Error loading leaderboard', 'error');
-  }
-}
 
 // ===== AUTH =====
 function handleAuthSubmit(type) {

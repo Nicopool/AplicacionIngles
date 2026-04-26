@@ -561,10 +561,10 @@ function renderCurrentExercise(type) {
   }
   
   if (type === 'listening') {
-    document.getElementById('listening-prompt').innerHTML = ex.prompt.replace('___', '<input type="text" id="list-ans" class="blank-input">');
+    document.getElementById('listening-prompt').innerHTML = ex.prompt.replace('___', '<input type="text" id="list-ans" class="blank-input" placeholder="escribe lo que escuchas...">');
     const playBtn = document.getElementById('btn-listen-play');
-    
-    // Simular audio player
+
+    // Reproductor de audio
     playBtn.onclick = () => {
       document.getElementById('audio-player').classList.toggle('paused');
       playBtn.innerHTML = playBtn.innerHTML.includes('play') ? '<i class="bi bi-pause-fill"></i>' : '<i class="bi bi-play-fill"></i>';
@@ -572,37 +572,62 @@ function renderCurrentExercise(type) {
     };
 
     document.getElementById('btn-check-listening').onclick = () => {
-       const v = document.getElementById('list-ans').value.trim().toLowerCase();
-       const ans = ex.answer.toLowerCase();
-       const res = document.getElementById('listening-result');
-       res.style.display = 'flex';
-       if(v === ans) {
-         document.getElementById('list-ans').classList.add('correct');
-         res.className = 'result-indicator correct';
-         res.innerHTML = `✅ Well done!`;
-         setTimeout(() => nextExercise(type), 1500);
-       } else {
-         document.getElementById('list-ans').classList.add('wrong');
-         res.className = 'result-indicator wrong';
-         res.innerHTML = `❌ Incorrect. Correct answer: \${ex.answer}`;
-       }
+      const input = document.getElementById('list-ans');
+      const v   = input.value.trim().toLowerCase();
+      const ans = ex.answer.toLowerCase();
+      const res = document.getElementById('listening-result');
+      res.style.display = 'flex';
+
+      if (v === ans) {
+        input.classList.remove('wrong');
+        input.classList.add('correct');
+        input.disabled = true;
+        res.className = 'result-indicator correct';
+        res.innerHTML = '✅ ¡Correcto!';
+        setTimeout(() => nextExercise(type), 1500);
+      } else {
+        input.classList.remove('correct');
+        input.classList.add('wrong');
+        res.className = 'result-indicator wrong';
+        // Muestra respuesta correcta + botones para reintentar o saltar
+        res.innerHTML = `
+          <div style="width:100%;">
+            <div>❌ Era: <strong>${ex.answer}</strong></div>
+            <div style="display:flex;gap:8px;margin-top:10px;">
+              <button class="btn" style="flex:1;padding:10px;background:var(--bg-page);color:var(--text-main);border:1.5px solid var(--border);border-radius:12px;font-weight:600;"
+                onclick="
+                  var inp=document.getElementById('list-ans');
+                  inp.value='';
+                  inp.classList.remove('wrong','correct');
+                  inp.disabled=false;
+                  document.getElementById('listening-result').style.display='none';
+                  inp.focus();
+                ">🔄 Reintentar</button>
+              <button class="btn btn-primary" style="flex:1;padding:10px;border-radius:12px;font-weight:600;"
+                onclick="window._nextExercise('listening')">Siguiente →</button>
+            </div>
+          </div>`;
+      }
     };
   }
 
   if (type === 'speaking') {
-    const prompt = document.getElementById('speaking-prompt');
+    const prompt  = document.getElementById('speaking-prompt');
     prompt.innerHTML = ex.prompt;
-    
-    const micBtn = document.getElementById('btn-mic');
-    const status = document.getElementById('mic-status');
-    const res = document.getElementById('speaking-result');
+
+    const micBtn  = document.getElementById('btn-mic');
+    const status  = document.getElementById('mic-status');
+    const res     = document.getElementById('speaking-result');
     const nextBtn = document.getElementById('btn-next-speaking');
+
+    // Botón "Siguiente" siempre disponible (permite saltar si no puede grabar)
+    nextBtn.style.display = 'block';
+    nextBtn.onclick = () => nextExercise(type);
 
     micBtn.onclick = () => {
       const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!Recognition) {
-        Toast('Your browser does not support voice recognition. Simulating...', 'info');
-        // Fallback simulation
+        Toast('Tu navegador no soporta reconocimiento de voz. Simulando...', 'info');
         simulateSpeaking(ex, prompt, micBtn, status, res, nextBtn);
         return;
       }
@@ -610,40 +635,58 @@ function renderCurrentExercise(type) {
       const rec = new Recognition();
       rec.lang = 'en-US';
       rec.interimResults = false;
+      rec.maxAlternatives = 3;
 
       rec.onstart = () => {
         micBtn.classList.add('recording');
-        status.innerText = "Listening...";
+        status.innerText = 'Escuchando...';
         res.style.display = 'none';
       };
 
       rec.onresult = (event) => {
-        const result = event.results[0][0].transcript.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g,"");
-        const target = ex.prompt.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g,"");
-        
+        // Revisar todas las alternativas de reconocimiento
+        const transcripts = Array.from(event.results[0]).map(r => r.transcript.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ''));
+        const target = ex.prompt.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, '');
+
         micBtn.classList.remove('recording');
+        status.innerText = 'Toca para hablar';
         res.style.display = 'flex';
-        
-        if (result.includes(target) || target.includes(result)) {
-           prompt.innerHTML = `<span class="word-ok">${ex.prompt}</span>`;
-           res.className = 'result-indicator correct';
-           res.innerHTML = `✅ Perfect! You said: "${event.results[0][0].transcript}"`;
-           nextBtn.style.display = 'block';
+
+        const matched = transcripts.some(t => t.includes(target) || target.includes(t));
+
+        if (matched) {
+          prompt.innerHTML = `<span class="word-ok">${ex.prompt}</span>`;
+          res.className = 'result-indicator correct';
+          res.innerHTML = `✅ ¡Perfecto! Dijiste: "${event.results[0][0].transcript}"`;
+          nextBtn.style.display = 'block';
         } else {
-           res.className = 'result-indicator wrong';
-           res.innerHTML = `⚠️ Oops! You said: "${event.results[0][0].transcript}". Try again.`;
+          res.className = 'result-indicator wrong';
+          // Muestra lo que dijo y botón claro para intentar de nuevo o saltar
+          res.innerHTML = `
+            <div style="width:100%;">
+              <div>⚠️ Dijiste: "${event.results[0][0].transcript}"</div>
+              <div style="color:var(--text-muted);font-size:13px;margin-top:4px;">Intenta pronunciar: <em>${ex.prompt}</em></div>
+              <button class="btn btn-primary" style="margin-top:12px;width:100%;padding:12px;border-radius:12px;"
+                onclick="window._nextExercise('speaking')">Siguiente ejercicio →</button>
+            </div>`;
         }
       };
 
-      rec.onerror = () => {
+      rec.onerror = (e) => {
         micBtn.classList.remove('recording');
-        status.innerText = "Error. Tap to retry";
+        status.innerText = 'Error de micrófono. Toca para reintentar';
+        res.style.display = 'flex';
+        res.className = 'result-indicator wrong';
+        res.innerHTML = `
+          <div style="width:100%;">
+            <div>🎤 No se pudo escuchar (${e.error})</div>
+            <button class="btn btn-primary" style="margin-top:12px;width:100%;padding:12px;border-radius:12px;"
+              onclick="window._nextExercise('speaking')">Siguiente →</button>
+          </div>`;
       };
 
       rec.start();
     };
-
-    nextBtn.onclick = () => nextExercise(type);
   }
 }
 
@@ -666,18 +709,24 @@ async function nextExercise(type) {
   if (state.currentExerciseIdx >= state.currentExercises.length) {
     await completeActivity(30);
   } else {
-    Toast('Well done! Moving to next exercise...', 'success');
+    Toast('¡Bien! Siguiente ejercicio...', 'success');
     renderCurrentExercise(type);
   }
 }
+// Exponer globalmente para los botones inline del HTML
+window._nextExercise = nextExercise;
 
 // ===== COMPLETE SCREEN =====
 async function completeActivity(xpEarned) {
-  if (navigator.onLine) {
-    await authService.addXP(state.profile.id, xpEarned);
-    state.profile.user_stats[0].xp += xpEarned;
+  const DEMO_IDS = ['demo-user', 'demo-123', 'demo'];
+  if (!DEMO_IDS.includes(state.profile.id) && navigator.onLine) {
+    try {
+      await authService.addXP(state.profile.id, xpEarned);
+    } catch(e) { console.warn('XP update failed:', e); }
   }
-  
+  // Actualizar XP local siempre
+  state.profile.user_stats[0].xp += xpEarned;
+
   app.innerHTML = `
     <div class="screen result-screen">
       <div class="result-emoji">🎉</div>

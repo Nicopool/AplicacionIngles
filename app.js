@@ -4,7 +4,7 @@ import * as apiService from './services/api.js';
 import * as dbService from './local_db/db.js';
 
 import { renderLanding } from './screens/landing.js';
-import { renderAuth } from './screens/auth.js?v=5';
+import { renderAuth } from './screens/auth.js';
 import { renderPlacementTest, renderTestQuestion } from './screens/test.js';
 import { renderDashboard } from './screens/dashboard.js';
 import { renderReadingList, renderReadingContent } from './screens/reading.js';
@@ -51,8 +51,10 @@ const DEMO_PROFILE = {
 
 // ================= INICIALIZACIÓN =================
 async function init() {
+  console.log("App init starting...");
   try {
     await dbService.initLocalDB();
+    console.log("Local DB ready");
   } catch (e) {
     console.error("Local DB Error", e);
   }
@@ -60,10 +62,15 @@ async function init() {
   // Usar perfil demo directamente, sin login
   state.profile = DEMO_PROFILE;
   state.user = { id: DEMO_PROFILE.id };
+  console.log("Profile set:", state.profile);
 
   // Ocultar splash screen una vez que la app esté lista
-  if (window._hideSplash) window._hideSplash();
+  if (window._hideSplash) {
+    console.log("Hiding splash...");
+    window._hideSplash();
+  }
 
+  console.log("Navigating to landing...");
   navigate('landing');
 
   // Escuchar red para sincronizar local
@@ -414,10 +421,19 @@ function setupReadingInteractions() {
       popupText.innerText = translation ? translation : '???';
 
       // Auto-guardado
-      if (translation && navigator.onLine && state.profile.id !== 'demo-123') {
-        apiService.saveWord(state.profile.id, word, translation);
-      } else if (translation) {
-        dbService.queueSync(word, translation, state.profile.id);
+      const DEMO_IDS = ['demo-user', 'demo-123', 'demo'];
+      const isDemoUser = DEMO_IDS.includes(state.profile.id);
+      if (translation) {
+        if (!isDemoUser && navigator.onLine) {
+          // Usuario real con conexión → guardar en Supabase
+          apiService.saveWord(state.profile.id, word, translation).catch(() => {
+            // Fallback a local si Supabase falla
+            dbService.queueSync(word, translation, state.profile.id);
+          });
+        } else {
+          // Demo o sin conexión → guardar en IndexedDB local
+          dbService.queueSync(word, translation, state.profile.id);
+        }
       }
     });
   });
@@ -681,44 +697,57 @@ async function completeActivity(xpEarned) {
 async function loadFlashcards() {
   const cont = document.getElementById('flashcards-container');
   const list = document.getElementById('vocab-list');
+
+  // IDs del perfil demo (no son UUIDs válidos de Supabase)
+  const DEMO_IDS = ['demo-user', 'demo-123', 'demo'];
+  const isDemo = DEMO_IDS.includes(state.profile.id);
   
   try {
     let vocab = [];
-    if (state.profile.id !== 'demo-123' && navigator.onLine) {
-      vocab = await apiService.getUserVocabulary(state.profile.id);
-      dbService.cacheItems('vocabulary', vocab);
+
+    if (!isDemo && navigator.onLine) {
+      // Usuario real con conexión → cargar desde Supabase
+      try {
+        vocab = await apiService.getUserVocabulary(state.profile.id);
+        dbService.cacheItems('vocabulary', vocab);
+      } catch (supabaseErr) {
+        console.warn('Supabase vocab error, trying local:', supabaseErr);
+        vocab = await dbService.getLocalItems('vocabulary') || [];
+      }
     } else {
-      const localVocab = await dbService.getLocalItems('vocabulary') || [];
-      const queuedVocab = await dbService.getLocalItems('syncQueue') || [];
-      // Combinar y eliminar duplicados basados en 'word'
+      // Demo o sin conexión → cargar desde IndexedDB
+      const localVocab  = await dbService.getLocalItems('vocabulary')  || [];
+      const queuedVocab = await dbService.getLocalItems('syncQueue')   || [];
       const combined = [...localVocab, ...queuedVocab];
       const uniqueWords = new Set();
       vocab = combined.filter(v => {
-        if(uniqueWords.has(v.word)) return false;
+        if (uniqueWords.has(v.word)) return false;
         uniqueWords.add(v.word);
         return true;
       });
     }
 
     if (!vocab.length) {
-      cont.innerHTML = `<div class="empty-state">
-        <div class="empty-emoji">🧊</div>
-        <div class="empty-title">Your bank is empty</div>
-        <div class="empty-sub">Translate words in the Reading section to see them here.</div>
-      </div>`;
+      cont.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-emoji">📚</div>
+          <div class="empty-title">Tu banco está vacío</div>
+          <div class="empty-sub">Toca cualquier palabra en el módulo de <strong>Reading</strong> para traducirla y guardarla aquí automáticamente.</div>
+          <button class="btn btn-primary mt-24" onclick="window._nav('reading_list')" style="max-width:240px;">
+            Ir a Reading →
+          </button>
+        </div>`;
       list.innerHTML = '';
       return;
     }
 
-    // Render tarjeta destacada (la más reciente o random)
+    // Flashcard destacada (la más reciente)
     cont.innerHTML = renderSingleFlashcard(vocab[0]);
+    document.getElementById('fc-right').onclick = () => Toast('¡Bien! +1 XP');
+    document.getElementById('fc-wrong').onclick = () => Toast('Aparecerá de nuevo pronto');
 
-    // Botones FC
-    document.getElementById('fc-right').onclick = () => Toast('+1 XP added');
-    document.getElementById('fc-wrong').onclick = () => Toast('Will reappear soon');
-
-    // Lista abajo
-    let lHtml = '<div class="test-question-label mb-12">All your words:</div>';
+    // Lista completa de palabras
+    let lHtml = `<div class="test-question-label mb-12" style="padding-left:4px;">Todas tus palabras (${vocab.length}):</div>`;
     vocab.forEach(v => {
       lHtml += `
         <div class="vocab-item">
@@ -727,16 +756,21 @@ async function loadFlashcards() {
             <div class="vocab-trans">${v.translation}</div>
           </div>
           <button class="vocab-play" onclick="window._speak('${v.word}')"><i class="bi bi-volume-up-fill"></i></button>
-        </div>
-      `;
+        </div>`;
     });
     list.innerHTML = lHtml;
-    
-    // Global function for play in list
     window._speak = (w) => apiService.speakWord(w);
 
   } catch(e) {
-    console.error(e);
+    console.error('loadFlashcards error:', e);
+    if (cont) cont.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-emoji">⚠️</div>
+        <div class="empty-title">Error cargando vocabulario</div>
+        <div class="empty-sub">Revisa tu conexión e intenta de nuevo.</div>
+        <button class="btn btn-primary mt-24" onclick="window._nav('flashcards')" style="max-width:200px;">Reintentar</button>
+      </div>`;
+    if (list) list.innerHTML = '';
   }
 }
 
@@ -1081,7 +1115,7 @@ async function syncOfflineData() {
 // Los módulos ES son diferidos automáticamente, por lo que el DOM ya está listo.
 // Usamos DOMContentLoaded como seguro; si ya ocurrió, llamamos init() directamente.
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('DOMContentLoaded', () => init().catch(e => console.error('INIT FAILED:', e)));
 } else {
-  init();
+  init().catch(e => console.error('INIT FAILED:', e));
 }

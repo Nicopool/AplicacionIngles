@@ -4,11 +4,11 @@
 
 // Configuración de dificultad por nivel
 export const HANGMAN_CONFIG = {
-  A1: { label: 'A1 — Principiante', emoji: '🌱', lives: 8, color: '#16A34A', desc: 'Palabras simples y comunes. ¡Perfecto para empezar!' },
-  A2: { label: 'A2 — Básico',       emoji: '🌿', lives: 7, color: '#2563EB', desc: 'Vocabulario cotidiano con un poco más de dificultad.' },
-  B1: { label: 'B1 — Intermedio',   emoji: '🔥', lives: 6, color: '#D97706', desc: 'Palabras más largas. Se requiere concentración.' },
-  B2: { label: 'B2 — Avanzado',     emoji: '⚡', lives: 5, color: '#7C3AED', desc: 'Vocabulario complejo. Solo para valientes.' },
-  C1: { label: 'C1 — Experto',      emoji: '💀', lives: 4, color: '#DC2626', desc: 'Modo extremo. Frases y palabras avanzadas.' },
+  A1: { label: 'A1 — Beginner',      emoji: '🌱', lives: 8, color: '#16A34A', desc: 'Simple and common words. Perfect to start!' },
+  A2: { label: 'A2 — Basic',          emoji: '🌿', lives: 7, color: '#2563EB', desc: 'Everyday vocabulary with a bit more difficulty.' },
+  B1: { label: 'B1 — Intermediate',  emoji: '🔥', lives: 6, color: '#D97706', desc: 'Longer words. Concentration required.' },
+  B2: { label: 'B2 — Advanced',      emoji: '⚡', lives: 5, color: '#7C3AED', desc: 'Complex vocabulary. For the brave only.' },
+  C1: { label: 'C1 — Expert',        emoji: '💀', lives: 4, color: '#DC2626', desc: 'Extreme mode. Advanced phrases and words.' },
 };
 
 /** Pantalla de selección de nivel del ahorcado */
@@ -38,15 +38,15 @@ export function renderHangmanLevelSelect(currentLevel) {
       <div class="hangman-header">
         <button class="hangman-back-btn" onclick="window._back()">←</button>
         <div>
-          <div class="hangman-title">El Ahorcado</div>
-          <div class="hangman-subtitle">ELIGE TU DIFICULTAD</div>
+          <div class="hangman-title">The Hangman</div>
+          <div class="hangman-subtitle">CHOOSE YOUR DIFFICULTY</div>
         </div>
         <div style="width:40px;"></div>
       </div>
 
       <div class="hm-level-hero">
         <div class="hm-level-hero-icon">🎮</div>
-        <p class="hm-level-hero-text">Tu nivel actual es <strong>${currentLevel}</strong>. Puedes elegir cualquier nivel.</p>
+        <p class="hm-level-hero-text">Your current level is <strong>${currentLevel}</strong>. You can choose any level.</p>
       </div>
 
       <div class="hm-level-list">
@@ -66,23 +66,23 @@ export function renderHangman(wordObj, level) {
   const type        = wordObj.type        || '';
   const example     = wordObj.example     || '';
 
-  // Etiqueta de tipo gramatical en español
+  // Grammatical type labels in English
   const typeLabels = {
-    noun: 'sustantivo', verb: 'verbo', adjective: 'adjetivo',
-    adverb: 'adverbio', phrase: 'frase'
+    noun: 'noun', verb: 'verb', adjective: 'adjective',
+    adverb: 'adverb', phrase: 'phrase'
   };
   const typeLabel = typeLabels[type] || type;
 
   // Oración de ejemplo con el hueco donde va la palabra (si está disponible)
   const exampleHtml = example
     ? `<div class="hint-example">
-         <span class="hint-example-label">📖 Ejemplo:</span>
+         <span class="hint-example-label">📖 Example:</span>
          <em>"${example}"</em>
        </div>`
     : '';
 
   const translationHtml = translation
-    ? `<div class="hint-translation">🇪🇸 ${translation}</div>`
+    ? `<div class="hint-translation">🇺🇸 ${translation}</div>`
     : '';
 
   const typeBadge = typeLabel
@@ -94,7 +94,7 @@ export function renderHangman(wordObj, level) {
       <div class="hangman-header">
         <button class="hangman-back-btn" onclick="window._nav('hangman')">←</button>
         <div>
-          <div class="hangman-title">El Ahorcado</div>
+          <div class="hangman-title">The Hangman</div>
           <div class="hangman-subtitle" style="color:${cfg.color}">${cfg.emoji} ${cfg.label}</div>
         </div>
         <div class="hangman-lives" id="hm-lives">
@@ -126,7 +126,7 @@ export function renderHangman(wordObj, level) {
       <!-- Tarjeta de pista enriquecida -->
       <div class="hangman-hint-card">
         <div class="hint-header">
-          <div class="hint-btn">💡 Pista</div>
+          <div class="hint-btn">💡 Hint</div>
           ${typeBadge}
         </div>
         <div class="hint-description">${hint}</div>

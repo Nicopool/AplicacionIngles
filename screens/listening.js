@@ -2,11 +2,11 @@ import { AppHeader } from '../components/common.js';
 
 // Configuración de niveles de Listening
 export const LISTENING_CONFIG = {
-  A1: { label: 'A1 — Principiante', emoji: '🌱', color: '#16A34A', desc: 'Audios lentos y vocabulario básico.' },
-  A2: { label: 'A2 — Básico',       emoji: '🌿', color: '#2563EB', desc: 'Conversaciones breves de la vida diaria.' },
-  B1: { label: 'B1 — Intermedio',   emoji: '🔥', color: '#D97706', desc: 'Velocidad normal y oraciones más largas.' },
-  B2: { label: 'B2 — Avanzado',     emoji: '⚡', color: '#7C3AED', desc: 'Acentos reales y vocabulario complejo.' },
-  C1: { label: 'C1 — Experto',      emoji: '💀', color: '#DC2626', desc: 'Audios rápidos, modismos y sin subtítulos.' },
+  A1: { label: 'A1 — Beginner',      emoji: '🌱', color: '#16A34A', desc: 'Slow audio and basic vocabulary.' },
+  A2: { label: 'A2 — Basic',          emoji: '🌿', color: '#2563EB', desc: 'Short conversations from daily life.' },
+  B1: { label: 'B1 — Intermediate',  emoji: '🔥', color: '#D97706', desc: 'Normal speed and longer sentences.' },
+  B2: { label: 'B2 — Advanced',      emoji: '⚡', color: '#7C3AED', desc: 'Real accents and complex vocabulary.' },
+  C1: { label: 'C1 — Expert',        emoji: '💀', color: '#DC2626', desc: 'Fast audio, idioms and no subtitles.' },
 };
 
 /** Pantalla de selección de nivel de Listening */
@@ -35,14 +35,14 @@ export function renderListeningLevelSelect(currentLevel) {
         <button class="hangman-back-btn" onclick="window._back()">←</button>
         <div>
           <div class="hangman-title">Listening Skills</div>
-          <div class="hangman-subtitle">ELIGE TU NIVEL</div>
+          <div class="hangman-subtitle">CHOOSE YOUR LEVEL</div>
         </div>
         <div style="width:40px;"></div>
       </div>
 
       <div class="hm-level-hero">
         <div class="hm-level-hero-icon">🎧</div>
-        <p class="hm-level-hero-text">Tu nivel actual es <strong>${currentLevel}</strong>. Afina tu oído eligiendo el desafío adecuado.</p>
+        <p class="hm-level-hero-text">Your current level is <strong>${currentLevel}</strong>. Sharpen your ear by choosing the right challenge.</p>
       </div>
 
       <div class="hm-level-list">
@@ -68,7 +68,7 @@ export function renderListening(level) {
       
       <div class="exercise-body">
         <div class="audio-player paused" id="audio-player">
-          <div style="font-weight:700; text-align:center; margin-bottom:8px;">Pista 1</div>
+          <div style="font-weight:700; text-align:center; margin-bottom:8px;">Track 1</div>
           <div class="audio-waveform">
             <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
             <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
@@ -82,7 +82,7 @@ export function renderListening(level) {
         </div>
 
         <div class="exercise-card">
-          <div class="test-question-label">Escucha y completa:</div>
+          <div class="test-question-label">Listen and fill in the blank:</div>
           <div class="test-question-text" id="listening-prompt" style="line-height:2.5;">
              Loading...
           </div>
@@ -92,7 +92,7 @@ export function renderListening(level) {
 
       <div class="action-bar" style="padding:16px 20px;">
         <button class="btn btn-primary" id="btn-check-listening" style="width:100%;">
-          Comprobar
+          Check Answer
         </button>
       </div>
     </div>

@@ -354,39 +354,94 @@ async function finishPlacementTest() {
 }
 
 // ===== READING =====
+const READING_EMOJIS = ['📖','🗺️','🌿','🏙️','🔬','🎭','🌊','🚀','🦁','🏔️','🎨','🍀'];
+const LEVEL_CARD_COLORS = {
+  A1: { bg: '#DCFCE7', accent: '#16A34A', border: '#BBF7D0' },
+  A2: { bg: '#DBEAFE', accent: '#2563EB', border: '#BFDBFE' },
+  B1: { bg: '#FEF3C7', accent: '#D97706', border: '#FDE68A' },
+  B2: { bg: '#EDE9FE', accent: '#7C3AED', border: '#DDD6FE' },
+  C1: { bg: '#FEE2E2', accent: '#DC2626', border: '#FECACA' },
+};
+
 async function loadReadingList() {
   const c = document.getElementById('reading-list-container');
   try {
     let readingData = await apiService.getReadingByLevel(state.profile.level);
-    
-    // Cache offline
     dbService.cacheItems('reading', readingData);
-
     if(!readingData.length && !navigator.onLine) {
       readingData = await dbService.getLocalItems('reading');
     }
-
     if(!readingData.length) {
-      c.innerHTML = '<p>No hay textos para tu nivel aún.</p>'; return;
+      c.innerHTML = `
+        <div style="text-align:center; padding:40px 20px;">
+          <div style="font-size:48px; margin-bottom:12px;">📭</div>
+          <div style="font-weight:800; color:var(--text-main); font-size:16px; margin-bottom:6px;">No texts yet</div>
+          <div style="color:var(--text-muted); font-size:13px;">Check back soon — new stories are added regularly!</div>
+        </div>`;
+      return;
     }
+    // Update hero stats
+    const totalWords = readingData.reduce((s, r) => s + (r.content || '').trim().split(/\s+/).length, 0);
+    const totalMins = Math.max(1, Math.round(totalWords / 130));
+    const countEl = document.getElementById('rl-count');
+    const timeEl  = document.getElementById('rl-time');
+    if (countEl) countEl.textContent = readingData.length;
+    if (timeEl)  timeEl.textContent  = totalMins;
 
+    const lc = LEVEL_CARD_COLORS[state.profile.level] || LEVEL_CARD_COLORS['A1'];
     let html = '';
     readingData.forEach((r, i) => {
       window[`_goReading${i}`] = () => navigate('reading_content', r);
+      const words = (r.content || '').trim().split(/\s+/).length;
+      const mins  = Math.max(1, Math.round(words / 130));
+      const emoji = READING_EMOJIS[i % READING_EMOJIS.length];
+      const preview = (r.content || '').substring(0, 80);
       html += `
-        <div class="module-row mb-16" onclick="window._goReading${i}()">
-          <div class="module-row-icon" style="background:var(--primary-light); color:var(--primary)">📖</div>
-          <div class="module-row-info">
-            <div class="module-row-name">${r.title}</div>
-            <div class="module-row-detail">3 min · ${r.level}</div>
+        <div onclick="window._goReading${i}()" style="
+          background:white; border:1.5px solid var(--border);
+          border-radius:20px; margin-bottom:14px; overflow:hidden;
+          cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.06);
+          transition:transform 0.15s, box-shadow 0.15s;
+          display:flex; align-items:stretch;
+        "
+          onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(0,0,0,0.1)'"
+          onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'"
+        >
+          <div style="
+            width:70px; min-height:90px; flex-shrink:0;
+            background:${lc.bg};
+            display:flex; align-items:center; justify-content:center;
+            font-size:30px; border-right:1.5px solid ${lc.border};
+          ">${emoji}</div>
+          <div style="flex:1; padding:14px 14px; display:flex; flex-direction:column; justify-content:space-between; min-width:0;">
+            <div>
+              <div style="font-size:14px; font-weight:800; color:var(--text-main); line-height:1.3; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                ${r.title}
+              </div>
+              <div style="font-size:12px; color:var(--text-secondary); line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+                ${preview}…
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-top:10px;">
+              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                <span style="background:${lc.bg}; color:${lc.accent}; border:1px solid ${lc.border}; padding:2px 8px; border-radius:100px; font-size:11px; font-weight:700;">${r.level}</span>
+                <span style="font-size:11px; color:var(--text-muted); font-weight:600;">⏱ ${mins} min</span>
+                <span style="font-size:11px; color:var(--text-muted); font-weight:600;">📝 ${words}w</span>
+              </div>
+              <div style="color:${lc.accent}; font-size:20px; font-weight:900;">→</div>
+            </div>
           </div>
-          <div class="module-row-arrow">→</div>
         </div>
       `;
     });
     c.innerHTML = html;
   } catch(e) {
-    c.innerHTML = '<p>Error cargando textos.</p>';
+    c.innerHTML = `
+      <div style="text-align:center; padding:40px 20px;">
+        <div style="font-size:40px; margin-bottom:12px;">⚠️</div>
+        <div style="font-weight:700; color:var(--text-main);">Error loading texts</div>
+        <button onclick="window._nav('reading_list')" style="margin-top:16px; padding:10px 20px; background:var(--primary); color:white; border:none; border-radius:12px; font-weight:700; cursor:pointer;">Retry</button>
+      </div>`;
   }
 }
 
@@ -583,7 +638,7 @@ function renderCurrentExercise(type) {
         input.classList.add('correct');
         input.disabled = true;
         res.className = 'result-indicator correct';
-        res.innerHTML = '✅ ¡Correcto!';
+        res.innerHTML = '✅ Correct!';
         setTimeout(() => nextExercise(type), 1500);
       } else {
         input.classList.remove('correct');
@@ -602,9 +657,9 @@ function renderCurrentExercise(type) {
                   inp.disabled=false;
                   document.getElementById('listening-result').style.display='none';
                   inp.focus();
-                ">🔄 Reintentar</button>
+                ">🔄 Retry</button>
               <button class="btn btn-primary" style="flex:1;padding:10px;border-radius:12px;font-weight:600;"
-                onclick="window._nextExercise('listening')">Siguiente →</button>
+                onclick="window._nextExercise('listening')">Next →</button>
             </div>
           </div>`;
       }
@@ -657,31 +712,31 @@ function renderCurrentExercise(type) {
         if (matched) {
           prompt.innerHTML = `<span class="word-ok">${ex.prompt}</span>`;
           res.className = 'result-indicator correct';
-          res.innerHTML = `✅ ¡Perfecto! Dijiste: "${event.results[0][0].transcript}"`;
+          res.innerHTML = `✅ Perfect! You said: "${event.results[0][0].transcript}"`;
           nextBtn.style.display = 'block';
         } else {
           res.className = 'result-indicator wrong';
           // Muestra lo que dijo y botón claro para intentar de nuevo o saltar
           res.innerHTML = `
             <div style="width:100%;">
-              <div>⚠️ Dijiste: "${event.results[0][0].transcript}"</div>
-              <div style="color:var(--text-muted);font-size:13px;margin-top:4px;">Intenta pronunciar: <em>${ex.prompt}</em></div>
+              <div>⚠️ You said: "${event.results[0][0].transcript}"</div>
+              <div style="color:var(--text-muted);font-size:13px;margin-top:4px;">Try pronouncing: <em>${ex.prompt}</em></div>
               <button class="btn btn-primary" style="margin-top:12px;width:100%;padding:12px;border-radius:12px;"
-                onclick="window._nextExercise('speaking')">Siguiente ejercicio →</button>
+                onclick="window._nextExercise('speaking')">Next exercise →</button>
             </div>`;
         }
       };
 
       rec.onerror = (e) => {
         micBtn.classList.remove('recording');
-        status.innerText = 'Error de micrófono. Toca para reintentar';
+        status.innerText = 'Mic error. Tap to retry';
         res.style.display = 'flex';
         res.className = 'result-indicator wrong';
         res.innerHTML = `
           <div style="width:100%;">
-            <div>🎤 No se pudo escuchar (${e.error})</div>
+            <div>🎤 Could not hear you (${e.error})</div>
             <button class="btn btn-primary" style="margin-top:12px;width:100%;padding:12px;border-radius:12px;"
-              onclick="window._nextExercise('speaking')">Siguiente →</button>
+              onclick="window._nextExercise('speaking')">Next →</button>
           </div>`;
       };
 
@@ -709,7 +764,7 @@ async function nextExercise(type) {
   if (state.currentExerciseIdx >= state.currentExercises.length) {
     await completeActivity(30);
   } else {
-    Toast('¡Bien! Siguiente ejercicio...', 'success');
+    Toast('Nice! Next exercise...', 'success');
     renderCurrentExercise(type);
   }
 }
@@ -743,11 +798,20 @@ async function completeActivity(xpEarned) {
 }
 
 // ===== FLASHCARDS =====
+// Alphabet colors for word avatar chips
+const CHIP_COLORS = [
+  {bg:'#DBEAFE',text:'#2563EB'}, {bg:'#DCFCE7',text:'#16A34A'},
+  {bg:'#FEF3C7',text:'#D97706'}, {bg:'#EDE9FE',text:'#7C3AED'},
+  {bg:'#FCE7F3',text:'#DB2777'}, {bg:'#FEE2E2',text:'#DC2626'},
+  {bg:'#CFFAFE',text:'#0891B2'}, {bg:'#FEF9C3',text:'#CA8A04'},
+];
+
+let _allVocab = []; // global cache for search
+
 async function loadFlashcards() {
   const cont = document.getElementById('flashcards-container');
   const list = document.getElementById('vocab-list');
 
-  // IDs del perfil demo (no son UUIDs válidos de Supabase)
   const DEMO_IDS = ['demo-user', 'demo-123', 'demo'];
   const isDemo = DEMO_IDS.includes(state.profile.id);
   
@@ -755,7 +819,6 @@ async function loadFlashcards() {
     let vocab = [];
 
     if (!isDemo && navigator.onLine) {
-      // Usuario real con conexión → cargar desde Supabase
       try {
         vocab = await apiService.getUserVocabulary(state.profile.id);
         dbService.cacheItems('vocabulary', vocab);
@@ -764,7 +827,6 @@ async function loadFlashcards() {
         vocab = await dbService.getLocalItems('vocabulary') || [];
       }
     } else {
-      // Demo o sin conexión → cargar desde IndexedDB
       const localVocab  = await dbService.getLocalItems('vocabulary')  || [];
       const queuedVocab = await dbService.getLocalItems('syncQueue')   || [];
       const combined = [...localVocab, ...queuedVocab];
@@ -776,51 +838,115 @@ async function loadFlashcards() {
       });
     }
 
+    _allVocab = vocab;
+
+    // Update stats
+    const countEl = document.getElementById('vc-count');
+    const titleEl = document.getElementById('vc-words-title');
+    if (countEl) countEl.textContent = vocab.length;
+    if (titleEl && vocab.length) titleEl.textContent = `📚 All Words (${vocab.length})`;
+
     if (!vocab.length) {
       cont.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-emoji">📚</div>
-          <div class="empty-title">Tu banco está vacío</div>
-          <div class="empty-sub">Toca cualquier palabra en el módulo de <strong>Reading</strong> para traducirla y guardarla aquí automáticamente.</div>
-          <button class="btn btn-primary mt-24" onclick="window._nav('reading_list')" style="max-width:240px;">
-            Ir a Reading →
+        <div style="text-align:center; padding:40px 20px;">
+          <div style="font-size:56px; margin-bottom:16px;">📭</div>
+          <div style="font-weight:900; color:var(--text-main); font-size:18px; margin-bottom:8px;">Your bank is empty</div>
+          <div style="color:var(--text-secondary); font-size:13px; line-height:1.6; max-width:240px; margin:0 auto;">
+            Tap any word in the <strong>Reading</strong> module to translate it and save it here.
+          </div>
+          <button class="btn btn-primary mt-24" onclick="window._nav('reading_list')" style="margin-top:24px; max-width:220px; width:100%;">
+            Go to Reading →
           </button>
         </div>`;
-      list.innerHTML = '';
+      if (list) list.innerHTML = '';
       return;
     }
 
-    // Flashcard destacada (la más reciente)
+    // Featured flashcard
     cont.innerHTML = renderSingleFlashcard(vocab[0]);
-    document.getElementById('fc-right').onclick = () => Toast('¡Bien! +1 XP');
-    document.getElementById('fc-wrong').onclick = () => Toast('Aparecerá de nuevo pronto');
+    document.getElementById('fc-right').onclick = () => Toast('Great! +1 XP 🌟');
+    document.getElementById('fc-wrong').onclick = () => Toast('No worries, keep practicing! 💪');
 
-    // Lista completa de palabras
-    let lHtml = `<div class="test-question-label mb-12" style="padding-left:4px;">Todas tus palabras (${vocab.length}):</div>`;
-    vocab.forEach(v => {
-      lHtml += `
-        <div class="vocab-item">
-          <div>
-            <div class="vocab-word">${v.word}</div>
-            <div class="vocab-trans">${v.translation}</div>
-          </div>
-          <button class="vocab-play" onclick="window._speak('${v.word}')"><i class="bi bi-volume-up-fill"></i></button>
-        </div>`;
-    });
-    list.innerHTML = lHtml;
+    // Render word list
+    renderVocabList(vocab);
     window._speak = (w) => apiService.speakWord(w);
+
+    // Search filter
+    window._filterVocab = (query) => {
+      const filtered = _allVocab.filter(v =>
+        (v.word || '').toLowerCase().includes(query.toLowerCase()) ||
+        (v.translation || '').toLowerCase().includes(query.toLowerCase())
+      );
+      renderVocabList(filtered);
+    };
 
   } catch(e) {
     console.error('loadFlashcards error:', e);
     if (cont) cont.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-emoji">⚠️</div>
-        <div class="empty-title">Error cargando vocabulario</div>
-        <div class="empty-sub">Revisa tu conexión e intenta de nuevo.</div>
-        <button class="btn btn-primary mt-24" onclick="window._nav('flashcards')" style="max-width:200px;">Reintentar</button>
+      <div style="text-align:center; padding:40px 20px;">
+        <div style="font-size:40px; margin-bottom:12px;">⚠️</div>
+        <div style="font-weight:700; color:var(--text-main);">Error loading vocabulary</div>
+        <div style="color:var(--text-muted); font-size:13px; margin-top:6px;">Check your connection and try again.</div>
+        <button onclick="window._nav('flashcards')" style="margin-top:16px; padding:10px 20px; background:var(--primary); color:white; border:none; border-radius:12px; font-weight:700; cursor:pointer;">Retry</button>
       </div>`;
     if (list) list.innerHTML = '';
   }
+}
+
+function renderVocabList(vocab) {
+  const list = document.getElementById('vocab-list');
+  if (!list) return;
+
+  if (!vocab.length) {
+    list.innerHTML = `<div style="text-align:center; padding:30px 0; color:var(--text-muted); font-size:13px; font-weight:600;">No words match your search.</div>`;
+    return;
+  }
+
+  let html = '';
+  vocab.forEach((v, i) => {
+    const chip = CHIP_COLORS[i % CHIP_COLORS.length];
+    const letter = (v.word || '?')[0].toUpperCase();
+    html += `
+      <div style="
+        background:white; border:1.5px solid var(--border);
+        border-radius:16px; padding:12px 14px;
+        margin-bottom:10px;
+        display:flex; align-items:center; gap:12px;
+        box-shadow:0 1px 4px rgba(0,0,0,0.05);
+        transition:transform 0.15s;
+      "
+        onmouseover="this.style.transform='translateX(3px)'"
+        onmouseout="this.style.transform='translateX(0)'"
+      >
+        <!-- Letter avatar -->
+        <div style="
+          width:42px; height:42px; border-radius:12px; flex-shrink:0;
+          background:${chip.bg}; color:${chip.text};
+          display:flex; align-items:center; justify-content:center;
+          font-size:18px; font-weight:900;
+        ">${letter}</div>
+
+        <!-- Word + translation -->
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:15px; font-weight:800; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${v.word}</div>
+          <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">${v.translation || '—'}</div>
+        </div>
+
+        <!-- Audio button -->
+        <button onclick="window._speak('${v.word}')" style="
+          width:38px; height:38px; border-radius:50%; border:none; flex-shrink:0;
+          background:${chip.bg}; color:${chip.text};
+          font-size:16px; cursor:pointer;
+          display:flex; align-items:center; justify-content:center;
+          transition:transform 0.15s;
+        "
+          onmouseover="this.style.transform='scale(1.15)'"
+          onmouseout="this.style.transform='scale(1)'"
+        >🔊</button>
+      </div>
+    `;
+  });
+  list.innerHTML = html;
 }
 
 // ===== HANGMAN =====
@@ -980,8 +1106,8 @@ function renderHangmanUI(level) {
   if (justWon) {
     setTimeout(async () => {
       await Swal.fire({
-        title: '¡Excelente!',
-        text: '¡Adivinaste la palabra! Siguiente desafío...',
+        title: 'Excellent! 🎉',
+        text: 'You guessed the word! Next challenge...',
         icon: 'success',
         timer: 2000,
         showConfirmButton: false
@@ -992,10 +1118,10 @@ function renderHangmanUI(level) {
   } else if (state.hangmanLives <= 0) {
     setTimeout(async () => {
       await Swal.fire({
-        title: '¡Oh no!',
-        text: 'La palabra era: ' + word,
+        title: 'Oh no! 😨',
+        text: 'The word was: ' + word,
         icon: 'error',
-        confirmButtonText: 'Intentar de nuevo'
+        confirmButtonText: 'Try again'
       });
       startHangman(level);
     }, 1000);
@@ -1114,17 +1240,17 @@ function setupProfileInteractions() {
 
   btnSave.onclick = async () => {
     const newUsername = inputUser.value.trim();
-    if(!newUsername) return Toast('Por favor ingresa un nombre', 'error');
+    if(!newUsername) return Toast('Please enter a username', 'error');
 
     if(state.profile.id === 'demo-123') {
       state.profile.username = newUsername;
       state.profile.avatar_url = selectedAvatar;
-      Toast('Perfil actualizado (Modo Demo)');
+      Toast('Profile updated (Demo Mode)');
       return navigate('dashboard');
     }
 
     try {
-      btnSave.innerText = 'Guardando...';
+      btnSave.innerText = 'Saving...';
       btnSave.disabled = true;
 
       const updated = await apiService.updateProfile(state.profile.id, {
@@ -1133,13 +1259,13 @@ function setupProfileInteractions() {
       });
 
       state.profile = { ...state.profile, ...updated };
-      Toast('¡Perfil actualizado con éxito!');
+      Toast('Profile updated successfully!');
       navigate('dashboard');
     } catch(e) {
       console.error(e);
-      Toast('Error actualizando perfil', 'error');
+      Toast('Error updating profile', 'error');
     } finally {
-      btnSave.innerText = 'Guardar Cambios';
+      btnSave.innerText = 'Save Changes';
       btnSave.disabled = false;
     }
   };
@@ -1154,7 +1280,7 @@ async function syncOfflineData() {
     for (const item of q) {
       await apiService.saveWord(item.profileId, item.word, item.translation);
     }
-    if (q.length > 0) Toast(`${q.length} palabras guardadas offline sincronizadas`);
+    if (q.length > 0) Toast(`${q.length} offline words synced successfully`);
   } catch(e) {
     console.error("Error sincronizando", e);
   }
